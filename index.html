@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MTQ Pelajar SD Kabupaten Bantul 2026</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== RESET & VARIABEL ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --cream: #FFF5E4;
+            --blush: #FAC3C1;
+            --rose: #FAA4BD;
+            --rose-deep: #533B4D;
+            --accent-pink: #F599C6;
+            --accent-pink-text: color-mix(in srgb, #F599C6 70%, white 30%);
+            --hero-bg: #FFEA88;
+            --hero-ink: #4D6787;
+            --teal: #7DCCAD;
+            --gold: #D9A441;
+            --hijau: #2F6F53;
+            --ink: #3E4C63;
+
+            --topbar-h: clamp(3rem, 6vw, 4.2rem);
+            --r-card: 18px;
+            --max-width: 1400px;
+            --section-pad-x: clamp(1rem, 4vw, 3rem);
+            --section-pad-y: clamp(2rem, 5vh, 4rem);
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y proximity;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .display {
+            font-family: 'Fraunces', Georgia, serif;
+            font-optical-sizing: auto;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        img,
+        svg {
+            display: block;
+            max-width: 100%;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+            * {
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--accent-pink);
+            outline-offset: 3px;
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--rose-deep);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0 var(--section-pad-x);
+            z-index: 20;
+            border-bottom: 3px solid var(--accent-pink);
+            box-shadow: 0 2px 12px rgba(83, 59, 77, 0.25);
+        }
+
+        .topbar .brand {
+            color: var(--cream);
+            font-weight: 700;
+            font-size: clamp(0.75rem, 1.4vw, 1.05rem);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .topbar .brand b {
+            color: var(--accent-pink-text);
+        }
+
+        .topbar .brand .sub {
+            display: inline;
+        }
+
+        .topbar nav {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            flex-shrink: 1;
+            min-width: 0;
+            padding: 0.2rem 0;
+        }
+
+        .topbar nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .topbar nav a {
+            color: var(--cream);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+            padding: 0.4rem 0.7rem;
+            border-radius: 100px;
+            border: 2px solid transparent;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .topbar nav a:hover {
+            border-color: var(--accent-pink);
+        }
+
+        .topbar nav a.btn-cta {
+            background: var(--accent-pink);
+            color: var(--rose-deep);
+            border-color: var(--accent-pink);
+            font-weight: 700;
+        }
+
+        .topbar nav a.btn-cta:hover {
+            filter: brightness(1.08);
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 480px) {
+            .topbar .brand .sub {
+                display: none;
+            }
+            .topbar nav a {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.6rem;
+            }
+            .topbar nav {
+                gap: 0.2rem;
+            }
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100svh;
+            background: var(--hero-bg);
+            color: var(--hero-ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: calc(var(--topbar-h) + 1.5rem) var(--section-pad-x) calc(var(--topbar-h) + 0.5rem);
+            position: relative;
+            scroll-snap-align: start;
+            overflow: hidden;
+        }
+
+        .motif {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background-image: linear-gradient(45deg, var(--accent-pink) 25%, transparent 25%),
+                linear-gradient(-45deg, var(--accent-pink) 25%, transparent 25%);
+            background-size: 18px 18px;
+            opacity: 0.9;
+        }
+
+        .motif.top {
+            top: 0;
+        }
+        .motif.bottom {
+            bottom: 0;
+        }
+
+        .kicker {
+            color: var(--hero-ink);
+            font-weight: 700;
+            font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+            opacity: 0.8;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 6vw, 3.8rem);
+            font-weight: 900;
+            line-height: 1.02;
+            color: var(--hero-ink);
+            letter-spacing: -0.02em;
+        }
+
+        .hero .lokasi {
+            margin-top: 0.3rem;
+            font-family: 'Fraunces', serif;
+            font-weight: 600;
+            font-style: italic;
+            font-size: clamp(0.85rem, 1.8vw, 1.2rem);
+            color: var(--rose-deep);
+        }
+
+        .tagline {
+            margin-top: 0.6rem;
+            font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+            font-weight: 600;
+            color: var(--hero-ink);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem 0.5rem;
+        }
+
+        .tagline .pil {
+            font-weight: 700;
+            padding: 0.1rem 0.6rem;
+            border-radius: 100px;
+            color: var(--rose-deep);
+            font-size: 0.9em;
+        }
+        .tagline .pil.c1 {
+            background: var(--accent-pink);
+        }
+        .tagline .pil.c2 {
+            background: var(--gold);
+        }
+        .tagline .pil.c3 {
+            background: var(--teal);
+        }
+
+        .countdown {
+            display: flex;
+            gap: clamp(0.4rem, 1.5vw, 1.2rem);
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: clamp(1.2rem, 3vh, 2.2rem) 0 clamp(1rem, 2.5vh, 1.6rem);
+        }
+
+        .waktu-box {
+            background: var(--cream);
+            color: var(--rose-deep);
+            min-width: clamp(56px, 10vw, 92px);
+            padding: clamp(0.6rem, 1.4vw, 1.2rem) clamp(0.4rem, 1vw, 0.9rem);
+            border-radius: 14px;
+            border-bottom: 5px solid var(--accent-pink);
+            box-shadow: 4px 4px 0 var(--hero-ink);
+            flex: 1 0 auto;
+            max-width: 120px;
+        }
+
+        .waktu-box span {
+            display: block;
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: clamp(1.6rem, 4.5vw, 2.8rem);
+            line-height: 1;
+            letter-spacing: 0.02em;
+        }
+
+        .waktu-box small {
+            display: block;
+            margin-top: 0.3rem;
+            font-size: clamp(0.5rem, 0.9vw, 0.72rem);
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--ink);
+        }
+
+        .scroll-cue-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 0.2rem;
+        }
+
+        .scroll-cue {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--rose-deep);
+            background: var(--cream);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: clamp(0.75rem, 1.1vw, 0.88rem);
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            box-shadow: 3px 3px 0 var(--hero-ink);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .scroll-cue:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--hero-ink);
+        }
+
+        .scroll-cue svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        /* ===== SHARED SECTION ===== */
+        section.page {
+            padding: calc(var(--topbar-h) + 1.2rem) var(--section-pad-x) var(--section-pad-y);
+        }
+
+        section.page.snap {
+            scroll-snap-align: start;
+        }
+
+        section.page.full {
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .page-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid var(--ink);
+            padding-bottom: 1rem;
+        }
+
+        .page-head h2 {
+            font-size: clamp(1.4rem, 3.2vw, 2.4rem);
+            font-weight: 700;
+            color: var(--rose-deep);
+        }
+
+        .page-head p {
+            margin: 0.35rem 0 0;
+            max-width: 50ch;
+            color: var(--ink);
+            font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+        }
+
+        .btn-unduh {
+            background: var(--rose-deep);
+            color: var(--cream);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            padding: 0.7rem 1.4rem;
+            border-radius: 100px;
+            white-space: nowrap;
+            box-shadow: 4px 4px 0 var(--ink);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-unduh:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--ink);
+        }
+
+        /* ===== INFO ===== */
+        .info-layout {
+            display: grid;
+            grid-template-columns: minmax(240px, 360px) 1fr;
+            gap: 1.2rem;
+            align-items: stretch;
+        }
+
+        .info-card {
+            background: var(--rose-deep);
+            color: var(--cream);
+            border-radius: var(--r-card);
+            padding: clamp(1.2rem, 2.4vw, 1.9rem) clamp(1.2rem, 2.4vw, 1.9rem) clamp(1.6rem, 3vw, 2.4rem);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-card .ikon-lg {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: var(--accent-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-card .ikon-lg svg {
+            width: 17px;
+            height: 17px;
+            stroke: var(--rose-deep);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .info-blok-top {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .info-blok p.label {
+            margin: 0;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: var(--rose);
+            text-transform: uppercase;
+        }
+
+        .info-blok h3 {
+            font-size: clamp(1rem, 1.8vw, 1.3rem);
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .info-blok p.sub {
+            margin: 0.15rem 0 0;
+            font-size: clamp(0.8rem, 1vw, 0.88rem);
+            color: var(--cream);
+            opacity: 0.85;
+        }
+
+        .info-divider {
+            height: 2px;
+            background: color-mix(in srgb, var(--cream) 25%, transparent);
+            border: none;
+            margin: 0;
+        }
+
+        .timeline-panel {
+            background: var(--blush);
+            border-radius: var(--r-card);
+            padding: clamp(1.2rem, 2.4vw, 2.1rem) clamp(1.2rem, 2.4vw, 2rem) clamp(1.6rem, 3vw, 2.6rem);
+        }
+
+        .timeline-panel>p.intro {
+            margin: 0 0 1rem;
+            font-weight: 700;
+            color: var(--ink);
+            font-size: clamp(0.85rem, 1.1vw, 0.92rem);
+        }
+
+        .timeline {
+            border-left: 3px solid var(--rose);
+            margin-left: 0.5rem;
+            padding-left: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1rem, 2.2vw, 1.6rem);
+        }
+
+        .tl-item {
+            position: relative;
+        }
+
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -1.94rem;
+            top: 0.2rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-pink);
+            border: 3px solid var(--rose-deep);
+        }
+
+        .tl-item.puncak::before {
+            background: var(--rose-deep);
+            border-color: var(--accent-pink);
+        }
+
+        .tl-bulan {
+            margin: 0 0 0.2rem;
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            color: var(--rose-deep);
+            font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+        }
+
+        .tl-item p.ket {
+            margin: 0;
+            color: var(--ink);
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            line-height: 1.5;
+        }
+
+        .chip {
+            display: inline-block;
+            margin-left: 0.4rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--rose-deep);
+            background: var(--accent-pink);
+            padding: 0.15rem 0.5rem;
+            border-radius: 100px;
+            vertical-align: middle;
+        }
+
+        /* ===== JUKNIS ===== */
+        .mega-chip {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: var(--rose-deep);
+            background: var(--accent-pink);
+            padding: 0.15rem 0.6rem;
+            border-radius: 100px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .juknis-layout {
+            display: grid;
+            grid-template-columns: minmax(200px, 320px) 1fr;
+            gap: 1.2rem;
+            align-items: start;
+        }
+
+        .lomba-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .lomba-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: left;
+            background: var(--blush);
+            border: 2px solid var(--ink);
+            border-radius: 9px;
+            padding: 0.3rem 0.55rem;
+            cursor: pointer;
+            color: var(--ink);
+            flex-shrink: 0;
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            font-size: inherit;
+        }
+
+        .lomba-item:hover {
+            background: var(--cream);
+        }
+
+        .lomba-item .ikon {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: var(--rose-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .lomba-item .ikon svg {
+            width: 11px;
+            height: 11px;
+            stroke: var(--accent-pink);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .lomba-item .teks h3 {
+            font-size: clamp(0.7rem, 1vw, 0.8rem);
+            font-weight: 600;
+            line-height: 1.15;
+            margin: 0;
+        }
+
+        .lomba-item .teks span {
+            display: block;
+            margin-top: 0.05rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            color: var(--rose-deep);
+        }
+
+        .lomba-item[aria-selected="true"] {
+            background: var(--cream);
+            border-color: var(--accent-pink);
+            box-shadow: 3px 3px 0 var(--accent-pink);
+        }
+
+        .lomba-item[aria-selected="true"] .ikon {
+            background: var(--accent-pink);
+        }
+
+        .lomba-item[aria-selected="true"] .ikon svg {
+            stroke: var(--rose-deep);
+        }
+
+        .panel {
+            background: var(--blush);
+            border: 2.5px solid var(--ink);
+            border-radius: var(--r-card);
+            padding: clamp(1.2rem, 2.6vw, 2.1rem) clamp(1.2rem, 2.6vw, 2.1rem) clamp(1.8rem, 3.6vw, 2.8rem);
+            max-height: min(64vh, 600px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--rose) transparent;
+        }
+
+        .panel::-webkit-scrollbar {
+            width: 5px;
+        }
+        .panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .panel::-webkit-scrollbar-thumb {
+            background: var(--rose);
+            border-radius: 10px;
+        }
+
+        .detail {
+            display: none;
+            animation: fadePanel 0.25s ease;
+        }
+
+        .detail.active {
+            display: block;
+        }
+
+        @keyframes fadePanel {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .detail-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            border-bottom: 2px dashed var(--rose);
+            padding-bottom: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-head .ikon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--rose-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .detail-head .ikon svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--accent-pink);
+            fill: none;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .detail-head h3 {
+            font-size: clamp(1rem, 1.8vw, 1.4rem);
+            font-weight: 700;
+            color: var(--rose-deep);
+        }
+
+        .detail-head span {
+            display: block;
+            margin-top: 0.2rem;
+            font-size: clamp(0.7rem, 0.9vw, 0.82rem);
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .detail-body {
+            color: var(--ink);
+            font-size: clamp(0.9rem, 1vw, 1rem);
+            line-height: 1.65;
+        }
+
+        .detail-body p {
+            margin: 0 0 0.5rem;
+        }
+
+        .detail-body h4 {
+            margin: 1rem 0 0.35rem;
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            color: var(--rose-deep);
+            font-size: clamp(0.9rem, 1.1vw, 0.98rem);
+        }
+
+        .detail-body ol {
+            margin: 0.3rem 0 0.8rem;
+            padding-left: 1.2rem;
+        }
+
+        .detail-body ol li {
+            margin-bottom: 0.4rem;
+        }
+
+        .detail-body ol.sub-list {
+            margin: 0.3rem 0 0.2rem;
+            list-style: lower-alpha;
+        }
+
+        .detail-body strong {
+            color: var(--rose-deep);
+        }
+
+        .label-title {
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--rose-deep);
+            margin: 0.8rem 0 0.3rem;
+        }
+
+        .tabel-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0.4rem 0 0.8rem;
+            border-radius: 8px;
+        }
+
+        .tabel-scroll .tabel-nilai {
+            min-width: 280px;
+            width: 100%;
+            margin: 0;
+        }
+
+        .tabel-nilai {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.8rem, 0.95vw, 0.95rem);
+        }
+
+        .tabel-nilai th {
+            background: var(--rose-deep);
+            color: var(--cream);
+            padding: 0.4rem 0.6rem;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .tabel-nilai td {
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid var(--rose);
+        }
+
+        .tabel-nilai tr:nth-child(even) td {
+            background: var(--cream);
+        }
+
+        .tabel-nilai tr.total td {
+            font-weight: 700;
+            background: var(--accent-pink);
+            color: var(--ink);
+            border-bottom: none;
+        }
+
+        .tabel-nilai td.num {
+            text-align: center;
+            width: 80px;
+            white-space: nowrap;
+        }
+
+        .lagu-box {
+            background: var(--cream);
+            border-left: 3px solid var(--rose-deep);
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+            margin: 0.4rem 0 0.8rem;
+        }
+
+        .lagu-box p {
+            margin: 0 0 0.2rem;
+            font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+        }
+
+        .lagu-box .pencipta {
+            color: var(--ink);
+            opacity: 0.7;
+            font-style: italic;
+            font-size: 0.78em;
+        }
+
+        .mini-toggle {
+            margin-top: 0.8rem;
+            background: var(--cream);
+            border: 1.5px dashed var(--hijau);
+            border-radius: 10px;
+            padding: 0.5rem 0.8rem;
+        }
+
+        .mini-toggle summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--hijau);
+            font-size: clamp(0.8rem, 0.95vw, 0.88rem);
+        }
+
+        .mini-toggle .lampiran-isi {
+            margin-top: 0.6rem;
+        }
+
+        .mini-toggle .lampiran-isi h5 {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            color: var(--hijau);
+            font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+            margin: 0.6rem 0 0.2rem;
+        }
+
+        .mini-toggle .lampiran-isi ol {
+            margin: 0 0 0.3rem;
+            padding-left: 1.2rem;
+            font-size: clamp(0.78rem, 0.9vw, 0.85rem);
+        }
+
+        .mini-toggle .lampiran-isi ol li {
+            margin-bottom: 0.15rem;
+        }
+
+        /* ===== BACK TO TOP ===== */
+        .back-to-top {
+            position: fixed;
+            bottom: clamp(0.8rem, 2vh, 1.2rem);
+            right: clamp(0.8rem, 2vw, 1.2rem);
+            width: clamp(40px, 5vw, 48px);
+            height: clamp(40px, 5vw, 48px);
+            z-index: 15;
+            background: var(--rose-deep);
+            color: var(--cream);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: clamp(1rem, 1.4vw, 1.2rem);
+            box-shadow: 3px 3px 0 var(--ink);
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+
+        .back-to-top:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--ink);
+        }
+
+        /* ===== RESPONSIVE BREAKPOINTS ===== */
+        @media (max-width: 900px) {
+            .info-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .juknis-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .lomba-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                max-height: none;
+                overflow: visible;
+                gap: 0.4rem;
+            }
+
+            .lomba-item {
+                flex: 1 1 180px;
+                padding: 0.5rem 0.7rem;
+                gap: 0.6rem;
+            }
+
+            .lomba-item .ikon {
+                width: 30px;
+                height: 30px;
+                border-radius: 8px;
+            }
+
+            .lomba-item .ikon svg {
+                width: 15px;
+                height: 15px;
+            }
+
+            .lomba-item .teks h3 {
+                font-size: 0.8rem;
+            }
+
+            .panel {
+                max-height: none;
+                overflow-y: visible;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .page-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .lomba-item {
+                flex: 1 1 140px;
+            }
+
+            .detail-head .ikon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .detail-head .ikon svg {
+                width: 17px;
+                height: 17px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: clamp(1.8rem, 8vw, 2.4rem);
+            }
+
+            .waktu-box {
+                min-width: 48px;
+                padding: 0.5rem 0.3rem;
+            }
+
+            .waktu-box span {
+                font-size: clamp(1.3rem, 6vw, 1.8rem);
+            }
+
+            .waktu-box small {
+                font-size: 0.45rem;
+                letter-spacing: 0.8px;
+            }
+
+            .lomba-item {
+                flex: 1 1 100%;
+            }
+
+            .timeline {
+                padding-left: 1rem;
+                margin-left: 0.2rem;
+            }
+
+            .tl-item::before {
+                left: -1.44rem;
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        /* ===== UTILITY ===== */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOPBAR ===== -->
+    <header class="topbar" role="banner">
+        <div class="brand">
+            <b>KKG PAI</b> <span class="sub">Kabupaten Bantul</span>
+        </div>
+        <nav aria-label="Navigasi utama">
+            <a href="#info">Waktu &amp; Tempat</a>
+            <a href="#petunjuk">Cabang Lomba</a>
+            <a href="LINK_PDF_DI_SINI" target="_blank" class="btn-cta">Unduh Juknis</a>
+        </nav>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="hero">
+        <div class="motif top" aria-hidden="true"></div>
+        <p class="kicker">Musabaqah Tilawatil Qur'an</p>
+        <h1>MTQ Pelajar SD</h1>
+        <p class="lokasi">Kabupaten Bantul &middot; 2026</p>
+        <p class="tagline">
+            <span class="pil c1">Cinta</span> di Hati,
+            <span class="pil c2">Ukir Prestasi</span>,
+            Wujudkan Generasi <span class="pil c3">Qur'ani</span>
+        </p>
+        <div class="countdown" id="timer" role="timer" aria-label="Countdown menuju acara">
+            <div class="waktu-box"><span data-time="hari">00</span><small>Hari</small></div>
+            <div class="waktu-box"><span data-time="jam">00</span><small>Jam</small></div>
+            <div class="waktu-box"><span data-time="menit">00</span><small>Menit</small></div>
+            <div class="waktu-box"><span data-time="detik">00</span><small>Detik</small></div>
+        </div>
+        <div class="scroll-cue-row">
+            <a href="#info" class="scroll-cue">
+                Lihat waktu &amp; tempat
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg>
+            </a>
+            <a href="#petunjuk" class="scroll-cue">
+                Lihat cabang lomba
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg>
+            </a>
+        </div>
+        <div class="motif bottom" aria-hidden="true"></div>
+    </section>
+
+    <!-- ===== INFO ===== -->
+    <section class="page full snap" id="info">
+        <div class="page-inner">
+            <div class="page-head">
+                <div>
+                    <h2>Waktu &amp; Tempat Pelaksanaan</h2>
+                    <p>Jadwal puncak acara tingkat kabupaten, serta tahapan seleksi yang mengantarkan peserta sampai ke sana.</p>
+                </div>
+            </div>
+            <div class="info-layout">
+                <div class="info-card">
+                    <div class="info-blok">
+                        <div class="info-blok-top">
+                            <span class="ikon-lg"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+                            <p class="label">Hari &amp; Tanggal</p>
+                        </div>
+                        <h3>Rabu, 11 November 2026</h3>
+                    </div>
+                    <hr class="info-divider" />
+                    <div class="info-blok">
+                        <div class="info-blok-top">
+                            <span class="ikon-lg"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.4"/></svg></span>
+                            <p class="label">Tempat</p>
+                        </div>
+                        <h3>SD Muhammadiyah Karangbendo</h3>
+                        <p class="sub">Kapanewon Banguntapan</p>
+                    </div>
+                </div>
+                <div class="timeline-panel">
+                    <p class="intro">Timeline kegiatan</p>
+                    <div class="timeline">
+                        <div class="tl-item">
+                            <p class="tl-bulan">September 2026</p>
+                            <p class="ket">Sosialisasi dan MTQ Tingkat Satuan Pendidikan &mdash; seleksi awal di masing-masing sekolah.</p>
+                        </div>
+                        <div class="tl-item">
+                            <p class="tl-bulan">Oktober 2026</p>
+                            <p class="ket">MTQ Tingkat Kapanewon &mdash; perwakilan tiap sekolah bertanding di tingkat kapanewon.</p>
+                        </div>
+                        <div class="tl-item puncak">
+                            <p class="tl-bulan">November 2026<span class="chip">Puncak acara</span></p>
+                            <p class="ket">MTQ Tingkat Kabupaten Bantul, di SD Muhammadiyah Karangbendo, Kapanewon Banguntapan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PETUNJUK ===== -->
+    <section class="page" id="petunjuk">
+        <div class="page-inner">
+
+            <div class="page-head">
+                <div>
+                    <h2>Cabang Lomba <span class="mega-chip">9 cabang</span></h2>
+                </div>
+            </div>
+
+            <div class="juknis-layout">
+                <div class="lomba-list" role="tablist" aria-label="Daftar cabang lomba">
+                    <button class="lomba-item" role="tab" aria-selected="true" data-target="d1">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><path d="M4 5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0V5z"/><path d="M20 5c-3-1.5-6-1.5-8 0v14c2-1.5 5-1.5 8 0V5z"/><path d="M12 9c1-.4 2-.4 3 0M12 13c1-.4 2-.4 3 0"/></svg></span>
+                        <span class="teks"><h3>1. Tilawatil Qur'an</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d2">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L20 20"/></svg></span>
+                        <span class="teks"><h3>2. Tartil Qur'an</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d3">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="7" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M9 8.5L11 15M15 8.5L13 15"/></svg></span>
+                        <span class="teks"><h3>3. Hifdzil Qur'an</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d4">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14 6l4 4"/></svg></span>
+                        <span class="teks"><h3>4. Puitisasi Saritilawah</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d5">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><path d="M12 2l1.8 2.6h-3.6L12 2z"/><rect x="9.5" y="4.6" width="5" height="13.4" rx="0.5"/><path d="M9.5 18h5v3h-5z"/></svg></span>
+                        <span class="teks"><h3>5. Adzan</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d6">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="10" rx="3"/><path d="M6 11a6 6 0 0012 0"/><path d="M12 17v4M9 21h6"/></svg></span>
+                        <span class="teks"><h3>6. Pidato PAI</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d7">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18c1.4 0 2-.9 2-1.9s-.5-1.4-.5-2.4S14.4 15 15.3 15h1.9a4 4 0 004-4c0-4.4-4-8-9.2-8z"/><circle cx="8.4" cy="10.6" r="1"/><circle cx="12" cy="8.6" r="1"/><circle cx="15.4" cy="10.6" r="1"/></svg></span>
+                        <span class="teks"><h3>7. Melukis Islami</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d8">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3 11.2c.6.4 1 1.1 1 1.8h4c0-.7.4-1.4 1-1.8A6 6 0 0012 3z"/></svg></span>
+                        <span class="teks"><h3>8. Cerdas Cermat PAI</h3></span>
+                    </button>
+                    <button class="lomba-item" role="tab" aria-selected="false" data-target="d9">
+                        <span class="ikon"><svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="7" cy="18" r="2.2"/><circle cx="17" cy="16" r="2.2"/></svg></span>
+                        <span class="teks"><h3>9. Menyanyi Islami</h3></span>
+                    </button>
+                </div>
+
+                <div class="panel">
+
+                    <!-- 1. MTQ -->
+                    <div class="detail active" id="d1" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><path d="M4 5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0V5z"/><path d="M20 5c-3-1.5-6-1.5-8 0v14c2-1.5 5-1.5 8 0V5z"/><path d="M12 9c1-.4 2-.4 3 0M12 13c1-.4 2-.4 3 0"/></svg></span>
+                            <div><h3>Musabaqah Tilawatil Qur'an (MTQ)</h3><span>1 peserta (putra/putri)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Lomba membaca Al-Qur'an dengan bacaan mujawwad dan murattal &mdash; bacaan yang memuat ilmu, seni, dan adab membaca &mdash; sebagai wujud cinta kepada Allah dan Rasul-Nya.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Durasi membaca maksimal 7 menit.</li>
+                                <li>Memilih salah satu maqro':
+                                    <ol class="sub-list">
+                                        <li>QS. al-Baqarah ayat 21</li>
+                                        <li>QS. al-Baqarah ayat 189</li>
+                                        <li>QS. Ali Imran ayat 31</li>
+                                        <li>QS. Ali Imran ayat 144</li>
+                                        <li>QS. Ali Imran ayat 189</li>
+                                    </ol>
+                                </li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (diinformasikan lewat WA Grup Koordinator MTQ).</li>
+                                <li>Mulai &amp; berhenti membaca mengikuti tanda dari dewan juri.</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Nilai Maks.</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Bidang Tajwid</td><td class="num">30</td></tr>
+                                        <tr><td>Bidang Fashohah</td><td class="num">30</td></tr>
+                                        <tr><td>Bidang Lagu dan Adab</td><td class="num">40</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. MTtQ -->
+                    <div class="detail" id="d2" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L20 20"/></svg></span>
+                            <div><h3>Musabaqah Tartil Qur'an (MTtQ)</h3><span>1 peserta (putra/putri)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Menekankan bacaan tartil &mdash; benar, dengan irama dan suara yang baik, tanpa lepas dari ilmu tajwid &mdash; sebagai wujud cinta kepada Allah, Al-Qur'an, dan ilmu.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Durasi membaca maksimal 7 menit.</li>
+                                <li>Maqro' dari Juz 1 s.d. Juz 3, ditentukan dewan juri <strong>saat lomba berlangsung</strong>.</li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (info lewat WA Grup Koordinator MTQ).</li>
+                                <li>Mulai &amp; berhenti membaca mengikuti tanda dari dewan juri.</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Nilai Maks.</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Bidang Tajwid</td><td class="num">40</td></tr>
+                                        <tr><td>Bidang Adab dan Fashohah</td><td class="num">30</td></tr>
+                                        <tr><td>Bidang Irama</td><td class="num">30</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. MHQ -->
+                    <div class="detail" id="d3" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="7" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M9 8.5L11 15M15 8.5L13 15"/></svg></span>
+                            <div><h3>Musabaqah Hifdzil Qur'an (MHQ)</h3><span>1 peserta (putra/putri)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Lomba menghafal Al-Qur'an, menilai ketepatan dan kelancaran hafalan serta ilmu dan adab membaca &mdash; sebagai bukti cinta kepada Allah dan Rasul-Nya.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Maqro' hafalan dari Juz Amma, QS. 90 s.d. 114 (Al-Balad s.d. An-Naas).</li>
+                                <li>Dua jenis pertanyaan dari Hakim Penanya:
+                                    <ol class="sub-list">
+                                        <li>Menyambung ayat &mdash; juri membaca sebagian ayat, peserta melanjutkan.</li>
+                                        <li>Menyebut nama surah &mdash; juri membaca satu ayat, peserta menyebut nama surahnya.</li>
+                                    </ol>
+                                </li>
+                                <li>Total 5 pertanyaan: 3 soal sambung ayat &amp; 2 soal sebut nama surah.</li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (info lewat WA Grup Koordinator MTQ).</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Interval Nilai</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Bidang Tahfidz</td><td class="num">30&ndash;50</td></tr>
+                                        <tr><td>Bidang Tajwid</td><td class="num">15&ndash;25</td></tr>
+                                        <tr><td>Bidang Fashohah dan Adab</td><td class="num">15&ndash;25</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Puitisasi Saritilawah -->
+                    <div class="detail" id="d4" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14 6l4 4"/></svg></span>
+                            <div><h3>Musabaqah Puitisasi Saritilawah</h3><span>1 peserta (putra/putri)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Membacakan terjemahan (saritilawah) ayat Al-Qur'an dalam bentuk puisi &mdash; sebagai wujud cinta kepada ilmu dan pemahaman Al-Qur'an.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Saritilawah diambil dari terjemahan Al-Qur'an Kementerian Agama (lampiran).</li>
+                                <li>Memilih satu surah:
+                                    <ol class="sub-list">
+                                        <li>Surah al-Fatihah</li>
+                                        <li>Surah al-Ma'un</li>
+                                        <li>Surah Al-Qadr</li>
+                                        <li>Surah Al-Kafirun</li>
+                                    </ol>
+                                </li>
+                                <li>Durasi puitisasi maksimal 10 menit. Boleh membawa teks, namun apresiasi lebih diberikan bagi yang tampil tanpa teks (hafalan).</li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (info lewat WA Grup Koordinator MTQ).</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Nilai Maks.</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Penghayatan dan Retorika</td><td class="num">40</td></tr>
+                                        <tr><td>Vokal dan Intonasi</td><td class="num">30</td></tr>
+                                        <tr><td>Artikulasi</td><td class="num">30</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <details class="mini-toggle">
+                                <summary>Lihat naskah saritilawah (4 pilihan surah)</summary>
+                                <div class="lampiran-isi">
+                                    <h5>Q.S. al-Fatihah</h5>
+                                    <ol>
+                                        <li>Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang.</li>
+                                        <li>Segala puji bagi Allah, Tuhan semesta alam.</li>
+                                        <li>Yang Maha Pengasih lagi Maha Penyayang,</li>
+                                        <li>Pemilik hari Pembalasan.</li>
+                                        <li>Hanya kepada Engkaulah kami menyembah dan hanya kepada Engkaulah kami memohon pertolongan.</li>
+                                        <li>Bimbinglah kami ke jalan yang lurus,</li>
+                                        <li>(yaitu) jalan orang-orang yang telah Engkau beri nikmat, bukan (jalan) mereka yang dimurkai dan bukan (pula jalan) orang-orang yang sesat.</li>
+                                    </ol>
+                                    <h5>Q.S. al-Ma'un</h5>
+                                    <ol>
+                                        <li>Tahukah kamu (orang) yang mendustakan agama?</li>
+                                        <li>Itulah orang yang menghardik anak yatim,</li>
+                                        <li>dan tidak menganjurkan untuk memberi makan orang miskin.</li>
+                                        <li>Celakalah orang-orang yang melaksanakan salat,</li>
+                                        <li>(yaitu) yang lalai terhadap salatnya,</li>
+                                        <li>yang berbuat riya,</li>
+                                        <li>dan enggan (memberi) bantuan.</li>
+                                    </ol>
+                                    <h5>Q.S. Al-Qadr</h5>
+                                    <ol>
+                                        <li>Sesungguhnya Kami telah menurunkannya (Al-Qur'an) pada malam Qadar.</li>
+                                        <li>Tahukah kamu apakah malam kemuliaan itu?</li>
+                                        <li>Malam kemuliaan itu lebih baik dari seribu bulan.</li>
+                                        <li>Pada malam itu turun para malaikat dan Ruh (Jibril) dengan izin Tuhannya untuk mengatur segala urusan.</li>
+                                        <li>Sejahteralah (malam itu) sampai terbit fajar.</li>
+                                    </ol>
+                                    <h5>Q.S. Al-Kafirun</h5>
+                                    <ol>
+                                        <li>Katakanlah: "Hai orang-orang kafir,</li>
+                                        <li>Aku tidak akan menyembah apa yang kamu sembah.</li>
+                                        <li>Dan kamu bukan penyembah Tuhan yang aku sembah.</li>
+                                        <li>Dan aku tidak pernah menjadi penyembah apa yang kamu sembah,</li>
+                                        <li>Dan kamu tidak pernah (pula) menjadi penyembah Tuhan yang aku sembah.</li>
+                                        <li>Untukmu agamamu, dan untukkulah agamaku."</li>
+                                    </ol>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- 5. Adzan -->
+                    <div class="detail" id="d5" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><path d="M12 2l1.8 2.6h-3.6L12 2z"/><rect x="9.5" y="4.6" width="5" height="13.4" rx="0.5"/><path d="M9.5 18h5v3h-5z"/></svg></span>
+                            <div><h3>Musabaqah Adzan (MAz)</h3><span>1 peserta (putra)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Meningkatkan dan mengembangkan seni azan, ikamah, dan doa setelahnya &mdash; menumbuhkan kegemaran mengumandangkan azan sebagai wujud cinta kepada Allah dan Rasul-Nya.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Mengumandangkan azan (bukan azan Subuh), dilanjutkan doa setelah azan, diakhiri ikamah.</li>
+                                <li>Waktu azan, doa, dan ikamah menyesuaikan masing-masing peserta.</li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (info lewat WA Grup Koordinator MTQ).</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Nilai Maks.</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Bidang Fashahah dan Adab</td><td class="num">50</td></tr>
+                                        <tr><td>Bidang Vokal dan Kejernihan Suara</td><td class="num">30</td></tr>
+                                        <tr><td>Bidang Lagu dan Variasi</td><td class="num">20</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. LPP -->
+                    <div class="detail" id="d6" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="10" rx="3"/><path d="M6 11a6 6 0 0012 0"/><path d="M12 17v4M9 21h6"/></svg></span>
+                            <div><h3>Lomba Pidato PAI (LPP)</h3><span>1 peserta (putra/putri)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Keterampilan menyampaikan nilai-nilai agama Islam secara lisan tanpa teks, bertema Lima Dimensi Cinta, diperkuat ayat Al-Qur'an, hadits, atau pendapat ulama.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Memilih satu tema dari Lima Dimensi Cinta:
+                                    <ol class="sub-list">
+                                        <li>Cinta kepada Allah dan Rasul-Nya</li>
+                                        <li>Cinta kepada Ilmu</li>
+                                        <li>Cinta kepada Lingkungan</li>
+                                        <li>Cinta kepada Diri Sendiri dan Sesama</li>
+                                        <li>Cinta kepada Tanah Air</li>
+                                    </ol>
+                                </li>
+                                <li>Menyerahkan teks pidato ke panitia pada hari lomba, 3 eksemplar.</li>
+                                <li>Berpidato dalam Bahasa Indonesia yang baik dan benar, tanpa teks, durasi 5&ndash;7 menit.</li>
+                                <li>Boleh menyisipkan humor yang menyegarkan dan memantapkan isi pidato.</li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (info lewat WA Grup Koordinator MTQ).</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Nilai Maks.</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Kesesuaian Isi &amp; Tema (Lima Dimensi Cinta)</td><td class="num">40</td></tr>
+                                        <tr><td>Retorika dan Ekspresi Mimik</td><td class="num">40</td></tr>
+                                        <tr><td>Gaya Bahasa dan Vokal</td><td class="num">20</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7. Melukis Islami -->
+                    <div class="detail" id="d7" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18c1.4 0 2-.9 2-1.9s-.5-1.4-.5-2.4S14.4 15 15.3 15h1.9a4 4 0 004-4c0-4.4-4-8-9.2-8z"/><circle cx="8.4" cy="10.6" r="1"/><circle cx="12" cy="8.6" r="1"/><circle cx="15.4" cy="10.6" r="1"/></svg></span>
+                            <div><h3>Lomba Melukis Islami</h3><span>1 peserta (putra/putri)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Melukis suasana yang memuat kegiatan islami atau mencerminkan budaya Islam, bertema <strong>"Lima Dimensi Cinta"</strong> sebagai implementasi Kurikulum Berbasis Cinta.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Bersifat individual, tidak diperkenankan mendapat bantuan dari siapa pun.</li>
+                                <li>Peserta tidak mengikuti upacara pembukaan MTQ, langsung menuju ruang lomba.</li>
+                                <li>Melukis di kertas A3 dari panitia. Nomor peserta menjadi satu-satunya identitas &mdash; tanpa nama di bagian depan.</li>
+                                <li>Membawa peralatan sendiri (crayon, pensil warna, cat air, atau media kering lainnya); teknik finishing untuk mempertegas warna akhir diperbolehkan.</li>
+                                <li>Durasi lomba 3 jam (180 menit).</li>
+                                <li>Karya menggambarkan salah satu atau kombinasi kelima dimensi cinta.</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Interval Nilai</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Kesesuaian dengan Tema Lima Dimensi Cinta</td><td class="num">5&ndash;15</td></tr>
+                                        <tr><td>Artistik dan Imajinasi</td><td class="num">30&ndash;50</td></tr>
+                                        <tr><td>Pemilihan Warna</td><td class="num">10&ndash;25</td></tr>
+                                        <tr><td>Kebersihan dan Kehalusan</td><td class="num">5&ndash;10</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">50&ndash;100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 8. LCP -->
+                    <div class="detail" id="d8" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3 11.2c.6.4 1 1.1 1 1.8h4c0-.7.4-1.4 1-1.8A6 6 0 0012 3z"/></svg></span>
+                            <div><h3>Lomba Cerdas Cermat PAI (LCP)</h3><span>Tim 3 peserta</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Menekankan penguasaan wawasan PAI melalui keterampilan menjawab cepat, tepat, dan terampil, secara beregu &mdash; wujud cinta kepada ilmu.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Tim terdiri atas 3 peserta didik (putra/putri/campuran).</li>
+                                <li>Materi: Kelas IV&ndash;VI sesuai CP No. 020 Tahun 2026 &amp; TP sesuai SK Kakanwil Kemenag DIY No. 522 Tahun 2026, serta Pengetahuan Umum Islami.</li>
+                                <li>Terdiri atas babak penyisihan dan babak final.</li>
+                            </ol>
+
+                            <h4>a. Babak Penyisihan</h4>
+                            <ol>
+                                <li>Diikuti seluruh perwakilan kapanewon.</li>
+                                <li>Soal ditayangkan lewat PowerPoint (1 menit/soal); jawaban ditulis di lembar jawab, dikumpulkan setelah soal terakhir.</li>
+                                <li>25 soal, bentuk pilihan ganda. Skor benar 100, salah 0.</li>
+                                <li>5 regu dengan nilai tertinggi lolos ke babak final.</li>
+                                <li>Nilai sama untuk penentuan 5 besar diberi soal tambahan tertulis.</li>
+                            </ol>
+
+                            <h4>b. Babak Final</h4>
+                            <p>Diikuti 5 kapanewon dengan nilai tertinggi. Terdiri atas 3 fase: soal wajib timing, soal wajib lempar rebut, dan soal rebutan.</p>
+
+                            <h4>1) Soal Wajib Timing</h4>
+                            <ol class="sub-list">
+                                <li>7 soal dibacakan berlanjutan dalam 120 detik.</li>
+                                <li>Tidak bisa menjawab boleh ucapkan "PAS", lanjut ke soal berikutnya.</li>
+                                <li>Sisa waktu dipakai mengulang soal yang belum terjawab.</li>
+                                <li>Skor benar 100, salah 0.</li>
+                            </ol>
+
+                            <h4>2) Soal Wajib Lempar Rebut</h4>
+                            <ol class="sub-list">
+                                <li>7 soal, waktu jawab 5 detik setelah soal dibacakan.</li>
+                                <li>Tidak terjawab akan diperebutkan regu lain (pencet bel, tunggu dipersilakan juri).</li>
+                                <li>Skor benar 100, salah 50.</li>
+                            </ol>
+
+                            <h4>3) Soal Rebutan</h4>
+                            <ol class="sub-list">
+                                <li>10 soal, dibacakan satu kali tanpa pengulangan.</li>
+                                <li>Regu tercepat memencet bel yang berhak menjawab.</li>
+                                <li>Jawaban sah hanya dari regu yang ditunjuk &amp; dipersilakan panitia; menjawab sebelum ditunjuk dianggap tidak sah.</li>
+                                <li>Bel dipencet sebelum soal selesai dibacakan &rarr; panitia berhenti membaca, regu menjawab dalam 5 detik.</li>
+                                <li>Jawaban lisan atau tertulis sesuai permintaan juri.</li>
+                                <li>Skor benar 100, salah &minus;100.</li>
+                                <li>Jawaban benar hanya jika seluruh komponen yang diminta terpenuhi; jawaban sebagian dianggap salah (&minus;100).</li>
+                                <li>Soal tak terjawab/lengkap melewati batas waktu dianggap salah (&minus;100).</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- 9. Menyanyi Islami -->
+                    <div class="detail" id="d9" role="tabpanel">
+                        <div class="detail-head">
+                            <span class="ikon"><svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="7" cy="18" r="2.2"/><circle cx="17" cy="16" r="2.2"/></svg></span>
+                            <div><h3>Lomba Menyanyi Islami</h3><span>1 peserta (solo)</span></div>
+                        </div>
+                        <div class="detail-body">
+                            <p>Mengekspresikan nilai-nilai keislaman melalui seni vokal &amp; musik, mengandung pesan spiritual dan moral &mdash; wujud cinta kepada Allah, Rasul-Nya, dan Lima Dimensi Cinta.</p>
+                            <p class="label-title">Ketentuan Khusus</p>
+                            <ol>
+                                <li>Menyanyi solo (perorangan).</li>
+                                <li>Memilih satu lagu:
+                                    <div class="lagu-box">
+                                        <p>a. Sepohon Kayu <span class="pencipta">(Ustad Jefri)</span></p>
+                                        <p>b. Alhamdulillah <span class="pencipta">(Opick)</span></p>
+                                        <p>c. Kisah Sang Rasul <span class="pencipta">(Aishwa Nahla)</span></p>
+                                        <p>d. Rindu Madinah <span class="pencipta">(Nissa Sabyan)</span></p>
+                                    </div>
+                                </li>
+                                <li>Durasi 5&ndash;7 menit (termasuk intro &amp; outro).</li>
+                                <li>Musik pengiring (karaoke/instrumental) format MP3, diserahkan saat pendaftaran; tidak boleh memuat vokal latar.</li>
+                                <li>Boleh tampil tanpa musik pengiring (akapel).</li>
+                                <li>Busana sopan, menutup aurat, dan mencerminkan nilai islami; busana muslim kreatif diperbolehkan.</li>
+                                <li>Gerakan/ekspresi pendukung penampilan diperbolehkan selama tidak berlebihan.</li>
+                                <li>Tampil bergantian sesuai nomor urut dari panitia (info lewat WA Grup Koordinator MTQ).</li>
+                            </ol>
+                            <p class="label-title">Penilaian</p>
+                            <div class="tabel-scroll">
+                                <table class="tabel-nilai">
+                                    <thead><tr><th>Kriteria</th><th class="num">Nilai Maks.</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Vokal (nada, intonasi, kejelasan, pernafasan)</td><td class="num">40</td></tr>
+                                        <tr><td>Penghayatan dan Ekspresi</td><td class="num">30</td></tr>
+                                        <tr><td>Penampilan (busana, percaya diri, adab)</td><td class="num">20</td></tr>
+                                        <tr><td>Kesesuaian Tempo dan Irama</td><td class="num">10</td></tr>
+                                        <tr class="total"><td>Jumlah</td><td class="num">100</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== BACK TO TOP ===== -->
+    <a href="#hero" class="back-to-top" aria-label="Kembali ke atas">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg>
+    </a>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        (function initCountdown() {
+            const target = new Date("November 11, 2026 00:00:00").getTime();
+            const el = {
+                hari: document.querySelector('[data-time="hari"]'),
+                jam: document.querySelector('[data-time="jam"]'),
+                menit: document.querySelector('[data-time="menit"]'),
+                detik: document.querySelector('[data-time="detik"]'),
+                wrap: document.getElementById('timer')
+            };
+            const pad = n => String(n).padStart(2, '0');
+
+            function tick() {
+                const diff = target - Date.now();
+                if (diff < 0) {
+                    clearInterval(id);
+                    if (el.wrap) {
+                        el.wrap.innerHTML =
+                            '<h2 style="font-family:\'Fraunces\',serif;font-size:clamp(1.2rem,2.8vw,2rem);color:var(--rose-deep);">Acara MTQ telah dimulai!</h2>';
+                    }
+                    return;
+                }
+                el.hari.textContent = pad(Math.floor(diff / 864e5));
+                el.jam.textContent = pad(Math.floor((diff % 864e5) / 36e5));
+                el.menit.textContent = pad(Math.floor((diff % 36e5) / 6e4));
+                el.detik.textContent = pad(Math.floor((diff % 6e4) / 1e3));
+            }
+            tick();
+            const id = setInterval(tick, 1000);
+        })();
+
+        (function initTabs() {
+            const tabs = document.querySelectorAll('.lomba-item');
+            const panels = document.querySelectorAll('.detail');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+                    this.setAttribute('aria-selected', 'true');
+
+                    panels.forEach(p => p.classList.remove('active'));
+                    const target = document.getElementById(this.dataset.target);
+                    if (target) {
+                        target.classList.add('active');
+                        // smooth scroll ke panel hanya di mobile
+                        const panel = document.querySelector('.panel');
+                        if (panel && window.innerWidth < 900) {
+                            panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+
+</body>
+</html>

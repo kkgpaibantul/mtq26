@@ -49,7 +49,7 @@
  * ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
-  height: 100dvh; overflow: hidden;
+  height: 100%; overflow: hidden; /* Diubah dari 100dvh agar lebih fleksibel */
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   background-color: var(--bg);
   background-image: radial-gradient(var(--border) 1px, transparent 1px);
@@ -77,16 +77,21 @@ a { color: inherit; text-decoration: none; }
 .spinner.light { border-color: rgba(255,255,255,0.3); border-top-color: #fff; }
 
 /* ============================================================
- * §3 APP SHELL
+ * §3 APP SHELL (Diperbaiki agar bisa discroll)
  * ============================================================ */
-#app { width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+#app { 
+  width: 100%; height: 100dvh; 
+  display: flex; align-items: flex-start; justify-content: center; 
+  padding: 3rem 1.5rem; 
+  overflow-y: auto; /* Tambahan agar halaman bisa discroll jika konten panjang */
+}
 .screen { display: none; width: 100%; height: 100%; max-width: 1000px; }
 .screen.active { display: flex; animation: fadeIn 0.4s ease; }
 
 #view-dashboard { flex-direction: column; max-width: 1000px; margin: 0 auto; overflow-y: auto; }
-#view-auth { flex-direction: column; justify-content: center; gap: 1.5rem; position: relative; }
+#view-auth { flex-direction: column; justify-content: flex-start; gap: 1.5rem; position: relative; }
 
-#view-loading { flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; text-align: center; padding: 2rem; }
+#view-loading { flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; text-align: center; padding: 2rem; height: 100%; }
 #view-loading .logo-wrap { position: relative; width: 64px; height: 64px; }
 #view-loading .logo-pulse { position: absolute; inset: 0; border-radius: 50%; background: var(--rose-light); opacity: 0.3; animation: pulse 1.8s ease-in-out infinite; }
 #view-loading .logo-inner { position: absolute; inset: 8px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); }
@@ -142,10 +147,20 @@ a { color: inherit; text-decoration: none; }
 .guide-arrow svg { width: 12px; height: 12px; }
 
 /* ============================================================
- * §6 AUTH CARDS
+ * §6 AUTH CARDS (Diperbaiki agar tidak memotong dropdown)
  * ============================================================ */
-.auth-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; max-width: 950px; margin: 0 auto; width: 100%; align-items: stretch; max-height: 65dvh; }
-.auth-card { background: var(--surface); border-radius: var(--r-lg); padding: 1.5rem; box-shadow: var(--shadow-md); border: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
+.auth-container { 
+  display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; 
+  max-width: 950px; margin: 0 auto; width: 100%; 
+  align-items: start; /* Diubah dari stretch ke start */
+  /* max-height: 65dvh; DIHAPUS agar tidak memotong dropdown */
+}
+.auth-card { 
+  background: var(--surface); border-radius: var(--r-lg); padding: 1.5rem; 
+  box-shadow: var(--shadow-md); border: 1px solid var(--border); 
+  display: flex; flex-direction: column; 
+  /* height: 100%; dan overflow-y: auto; DIHAPUS agar bisa memanjang ke bawah */
+}
 .auth-card::-webkit-scrollbar { width: 4px; }
 .auth-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .auth-card h2 { font-size: 1.3rem; margin-bottom: 0.2rem; }
@@ -242,7 +257,7 @@ a { color: inherit; text-decoration: none; }
 .custom-select-trigger.active { border-color: var(--rose-primary); box-shadow: 0 0 0 3px var(--rose-light); }
 .custom-select-trigger span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .custom-select-trigger.empty span { color: var(--ink-light); }
-.custom-select-dropdown { position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 50; display: none; flex-direction: column; max-height: 260px; overflow: hidden; }
+.custom-select-dropdown { position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 100; display: none; flex-direction: column; max-height: 350px; overflow: hidden; }
 .custom-select-dropdown.active { display: flex; }
 .custom-select-search { padding: 0.6rem; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; }
 .custom-select-search input { width: 100%; border: 1px solid var(--border); background: var(--surface); padding: 0.5rem 0.8rem; border-radius: var(--r-sm); outline: none; font-size: 0.9rem; }
@@ -313,7 +328,7 @@ a { color: inherit; text-decoration: none; }
   .back-home { position: static; align-self: flex-start; margin-bottom: 1rem; padding-left: 0; }
 
   #view-loading { min-height: 70dvh; padding-top: 15dvh; }
-  .auth-container { grid-template-columns: 1fr; max-height: none; gap: 1.5rem; }
+  .auth-container { grid-template-columns: 1fr; gap: 1.5rem; }
   .branch-grid { grid-template-columns: 1fr; }
   .appbar { padding: 0.8rem 1rem; margin-bottom: 1rem; }
   .form-content { padding: 1rem; padding-bottom: 120px; }
@@ -344,7 +359,7 @@ a { color: inherit; text-decoration: none; }
   .modal-token { font-size: 1.3rem; letter-spacing: 0.15em; }
   
   .fab-save { width: calc(100% - 1.6rem); bottom: 1rem; padding: 0.9rem; font-size: 0.95rem; }
-  .custom-select-dropdown { max-height: 40vh; }
+  .custom-select-dropdown { max-height: 300px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

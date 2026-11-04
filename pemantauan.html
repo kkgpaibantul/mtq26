@@ -437,160 +437,79 @@ body.is-fullscreen .lc-timer { font-size: 2.4rem; }
 body.is-fullscreen .lc-phase { font-size: 1.5rem; }
 
 /* ============================================================================
- * §7 PESERTA (Modern List Dashboard)
+ * §7 PESERTA (daftar ringkas, filter + urut)
  * ============================================================================ */
-.search-wrap {
-  position: sticky; top: calc(var(--header-h) + 0.5rem);
-  z-index: 20;
-  margin-bottom: 1.75rem;
-  display: flex; justify-content: center;
-  pointer-events: none;
-}
-.search-box { position: relative; width: 100%; max-width: 560px; pointer-events: auto; }
+.pt { max-width: 1040px; margin: 0 auto 0.75rem; }
+.pt-bar { position: sticky; top: calc(var(--header-h) + 0.4rem); z-index: 20; display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.6rem; }
+.search-box { position: relative; flex: 1; min-width: 0; }
 .search-box input {
-  width: 100%;
-  padding: 0.9rem 1.1rem 0.9rem 2.9rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-full);
-  font-size: 0.95rem; font-weight: 500;
-  background: var(--surface);
-  box-shadow: var(--shadow-md);
-  transition: var(--trans);
-  outline: none;
+  width: 100%; padding: 0.75rem 2.6rem 0.75rem 2.7rem;
+  border: 1.5px solid var(--border); border-radius: var(--r-full);
+  font-size: 0.95rem; font-weight: 500; background: var(--surface);
+  box-shadow: var(--shadow-md); transition: var(--trans); outline: none;
 }
 .search-box input::placeholder { color: var(--ink-muted); }
-.search-box input:focus {
-  border-color: var(--hijau);
-  box-shadow: 0 0 0 4px var(--hijau-soft), var(--shadow-md);
+.search-box input:focus { border-color: var(--hijau); box-shadow: 0 0 0 4px var(--hijau-soft), var(--shadow-md); }
+.search-box > svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--ink-muted); pointer-events: none; }
+.pt-clear { position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; color: var(--ink-soft); display: none; place-items: center; font-size: 1.1rem; line-height: 1; }
+.pt-clear.show { display: grid; }
+.pt-clear:hover { background: var(--hijau-soft); }
+.pt-toggle {
+  display: none; align-items: center; gap: 0.4rem; flex: none;
+  padding: 0.7rem 0.95rem; border-radius: var(--r-full); font-weight: 700; font-size: 0.85rem;
+  background: var(--surface); border: 1.5px solid var(--border); box-shadow: var(--shadow-md);
 }
-.search-box svg {
-  position: absolute; left: 1.05rem; top: 50%;
-  transform: translateY(-50%);
-  width: 18px; height: 18px;
-  color: var(--ink-muted);
-  pointer-events: none;
-}
+.pt-toggle .pt-badge { background: var(--hijau); color: #fff; border-radius: var(--r-full); font-size: 0.7rem; min-width: 18px; height: 18px; padding: 0 5px; display: none; place-items: center; }
+.pt-toggle .pt-badge.show { display: inline-grid; }
 
-/* Container List */
-.peserta-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  max-width: 960px;
-  margin: 0 auto;
+.pt-panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-md); padding: 0.8rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 0.7rem; }
+.pt-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.38rem 0.75rem;
+  border-radius: var(--r-full); border: 1.5px solid var(--border); background: var(--surface-soft);
+  font-size: 0.8rem; font-weight: 700; color: var(--ink-soft); transition: var(--trans);
 }
+.chip small { font-size: 0.7rem; font-weight: 700; color: var(--ink-muted); }
+.chip:hover { border-color: var(--hijau); color: var(--hijau-deep); }
+.chip[aria-pressed="true"] { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+.chip[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
+.chip[disabled] { opacity: .45; cursor: default; }
+.pt-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-end; }
+.pt-field { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; flex: 1 1 150px; }
+.pt-field > span { font-size: 0.65rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
+.pt-field select {
+  width: 100%; padding: 0.5rem 0.6rem; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--ink);
+}
+.pt-field select:focus { outline: none; border-color: var(--hijau); box-shadow: 0 0 0 3px var(--hijau-soft); }
+.pt-btn { padding: 0.5rem 0.9rem; border-radius: var(--r-sm); border: 1.5px solid var(--border); background: var(--surface); font-weight: 700; font-size: 0.85rem; white-space: nowrap; }
+.pt-btn:hover { border-color: var(--hijau); color: var(--hijau-deep); }
+.pt-btn[hidden] { display: none; }
+.pt-count { margin-top: 0.55rem; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
 
-/* Baris Peserta */
-.peserta-row {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  transition: var(--trans);
-  box-shadow: var(--shadow-sm);
-  position: relative;
-}
-.peserta-row::before {
-  content: ''; position: absolute;
-  left: 0; top: 0; bottom: 0; width: 4px;
-  background: var(--hijau); opacity: 0;
-  transition: var(--trans);
-}
-.peserta-row:hover {
-  border-color: var(--hijau);
-  box-shadow: var(--shadow-md);
-  transform: translateX(2px);
-}
-.peserta-row:hover::before { opacity: 1; }
+/* Header kolom (klik = urutkan) */
+.pl-head, .peserta-row { display: grid; grid-template-columns: 112px minmax(0,1.5fr) minmax(0,1.3fr) 130px 84px; gap: 0.75rem; align-items: center; }
+.pl-head { max-width: 1040px; margin: 0 auto; padding: 0.5rem 1rem; background: var(--hijau-soft); border: 1.5px solid var(--border); border-radius: var(--r-md) var(--r-md) 0 0; border-bottom: 0; }
+.pl-head button { text-align: left; font-size: 0.68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--hijau-deep); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0; }
+.pl-head button .ar { opacity: 0; font-size: 0.7rem; }
+.pl-head button[aria-sort] .ar { opacity: 1; }
+.pl-head button:hover { color: var(--ink); }
 
-/* Kolom Kiri (Cabang & Kapanewon) */
-.pr-left {
-  flex: 0 0 140px;
-  padding: 1.25rem 1rem;
-  background: var(--surface-soft);
-  border-right: 1.5px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-.pr-meta-label {
-  font-size: 0.6rem;
-  font-weight: 800;
-  color: var(--ink-muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.1rem;
-}
-.pr-cabang {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--rose-deep);
-  line-height: 1.2;
-}
-.pr-kapanewon {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-/* Kolom Tengah (Nama / Anggota) */
-.pr-main {
-  flex: 1;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.pr-name {
-  font-family: 'Fraunces', serif;
-  font-size: 1.15rem; font-weight: 800;
-  color: var(--ink);
-  line-height: 1.3;
-  margin-bottom: 0.2rem;
-}
-.pr-team-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  background: var(--surface-soft);
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--r-sm);
-  border: 1px dashed var(--border-strong);
-  margin-top: 0.5rem;
-}
-.pr-team-list li {
-  display: flex; align-items: baseline; gap: 0.5rem;
-  font-size: 0.85rem; line-height: 1.4;
-}
-.pr-team-num {
-  font-size: 0.7rem; font-weight: 800;
-  color: var(--ink-muted);
-  min-width: 12px;
-}
-.pr-team-name { font-weight: 600; color: var(--ink); }
-.pr-team-school { font-size: 0.75rem; color: var(--ink-muted); }
-
-/* Kolom Kanan (Asal Sekolah) */
-.pr-right {
-  flex: 0 0 220px;
-  padding: 1.25rem;
-  border-left: 1.5px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--surface);
-}
-.pr-right .pr-meta-val {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  line-height: 1.4;
-}
+.peserta-list { max-width: 1040px; margin: 0 auto; background: var(--surface); border: 1.5px solid var(--border); border-radius: 0 0 var(--r-md) var(--r-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+.peserta-row { padding: 0.6rem 1rem; border-top: 1px solid var(--border); font-size: 0.9rem; transition: background .15s; contain: content; }
+.peserta-row:first-child { border-top: 0; }
+.peserta-row:hover { background: var(--surface-soft); }
+.pr-no { white-space: nowrap; font-size: 0.72rem; font-weight: 700; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.pr-name { font-weight: 700; color: var(--ink); line-height: 1.3; }
+.pr-sub { font-size: 0.75rem; color: var(--ink-muted); font-weight: 500; line-height: 1.35; margin-top: 0.1rem; }
+.pr-school { color: var(--ink-soft); font-weight: 500; line-height: 1.35; }
+.pr-kap { font-weight: 600; color: var(--ink); }
+.pr-cab { justify-self: start; font-size: 0.72rem; font-weight: 800; color: var(--rose-deep); background: var(--rose-soft); padding: 0.2rem 0.55rem; border-radius: var(--r-full); }
+.pl-group { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; padding: 0.45rem 1rem; background: var(--bg); border-top: 1px solid var(--border-strong); border-bottom: 1px solid var(--border); font-size: 0.78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--rose); }
+.pl-group small { font-size: 0.72rem; font-weight: 700; color: var(--ink-muted); letter-spacing: 0; text-transform: none; }
+.pl-more { display: block; margin: 1rem auto 0; max-width: 1040px; }
+.pl-more[hidden] { display: none; }
+.pl-more .pt-btn { display: block; margin: 0 auto; padding: 0.65rem 1.4rem; }
 
 /* Empty State */
 .empty-state {
@@ -618,27 +537,20 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
   body.is-fullscreen .live-grid { grid-template-columns: 1fr; grid-template-rows: auto; height: auto; gap: 1rem; }
   body.is-fullscreen .live-card { height: auto; min-height: 200px; }
   body.is-fullscreen .fs-title { font-size: 1.2rem; padding: 0.9rem 1rem 0.5rem; }
-  
+
   /* Responsif untuk List Peserta */
-  .peserta-row { flex-direction: column; }
-  .pr-left { 
-    flex: none; 
-    flex-direction: row; 
-    justify-content: flex-start; 
-    gap: 1.5rem;
-    border-right: none; 
-    border-bottom: 1.5px solid var(--border); 
-    padding: 1rem; 
-    text-align: left;
-  }
-  .pr-left .pr-meta-label { display: none; }
-  .pr-right { 
-    flex: none; 
-    border-left: none; 
-    border-top: 1.5px dashed var(--border-strong); 
-    padding: 1rem; 
-  }
-  .pr-main { padding: 1rem; }
+  .pt-toggle { display: inline-flex; }
+  .pt-panel { display: none; }
+  .pt-panel.open { display: flex; }
+  .pl-head { display: none; }
+  .peserta-list { border-radius: var(--r-md); }
+  .peserta-row { grid-template-columns: minmax(0,1fr) auto; gap: 0.15rem 0.6rem; padding: 0.7rem 0.9rem; }
+  .peserta-row .pr-no { grid-column: 1; grid-row: 3; }
+  .peserta-row .pr-main { grid-column: 1; grid-row: 1; }
+  .peserta-row .pr-cab { grid-column: 2; grid-row: 1; align-self: start; }
+  .peserta-row .pr-school { grid-column: 1 / -1; grid-row: 2; font-size: 0.82rem; }
+  .peserta-row .pr-kap { grid-column: 1 / -1; grid-row: 3; font-size: 0.8rem; color: var(--ink-soft); }
+  .peserta-row .pr-no { display: none; }
 }
 
 @media (max-width: 640px) {
@@ -650,7 +562,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
   .hero h1 { font-size: 1.75rem; }
   .hero p { font-size: 0.88rem; }
   .live-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .search-wrap { top: calc(var(--header-h) + 0.25rem); }
+  .pt-bar { top: calc(var(--header-h) + 0.25rem); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -745,20 +657,60 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
   </section>
 
   <section id="tab-peserta" class="tab-pane" role="tabpanel" aria-labelledby="tabBtnPeserta">
-    <div class="search-wrap">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-        </svg>
-        <input type="text" id="searchPeserta" placeholder="Cari nama, sekolah, kapanewon, atau cabang..." autocomplete="off" spellcheck="false">
+    <div class="pt">
+      <div class="pt-bar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" id="searchPeserta" placeholder="Cari nama, sekolah, kapanewon, cabang..." autocomplete="off" spellcheck="false" aria-label="Cari peserta">
+          <button type="button" class="pt-clear" id="ptClear" aria-label="Hapus pencarian">&times;</button>
+        </div>
+        <button type="button" class="pt-toggle" id="ptToggle" aria-expanded="false" aria-controls="ptPanel">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          Filter<span class="pt-badge" id="ptBadge"></span>
+        </button>
       </div>
+
+      <div class="pt-panel" id="ptPanel">
+        <div class="pt-chips" id="ptChips" role="group" aria-label="Filter cabang"></div>
+        <div class="pt-row">
+          <label class="pt-field"><span>Kapanewon</span><select id="ptKap"><option value="">Semua kapanewon</option></select></label>
+          <label class="pt-field"><span>Urutkan</span>
+            <select id="ptSort">
+              <option value="kapanewon">Kapanewon</option>
+              <option value="nama">Nama peserta</option>
+              <option value="sekolah">Asal sekolah</option>
+              <option value="cabang">Cabang lomba</option>
+              <option value="no">No. pendaftaran</option>
+            </select></label>
+          <button type="button" class="pt-btn" id="ptDir" aria-label="Arah urutan">A–Z ↑</button>
+          <label class="pt-field"><span>Kelompokkan</span>
+            <select id="ptGroup">
+              <option value="">Tanpa kelompok</option>
+              <option value="cabang">Per cabang</option>
+              <option value="kapanewon">Per kapanewon</option>
+            </select></label>
+          <button type="button" class="pt-btn" id="ptReset" hidden>Reset</button>
+        </div>
+      </div>
+      <div class="pt-count" id="ptCount" role="status" aria-live="polite"></div>
     </div>
-    
+
+    <div class="pl-head" id="plHead" role="group" aria-label="Urutkan menurut kolom">
+      <button type="button" data-sort="no">No<span class="ar"></span></button>
+      <button type="button" data-sort="nama">Peserta<span class="ar"></span></button>
+      <button type="button" data-sort="sekolah">Asal Sekolah<span class="ar"></span></button>
+      <button type="button" data-sort="kapanewon">Kapanewon<span class="ar"></span></button>
+      <button type="button" data-sort="cabang">Cabang<span class="ar"></span></button>
+    </div>
+
     <div class="peserta-list" id="pesertaGrid" aria-live="polite" aria-busy="false">
       <div class="empty-state">
         <span class="spinner" aria-label="Memuat"></span>
       </div>
     </div>
+    <div class="pl-more" id="plMore" hidden><button type="button" class="pt-btn" id="btnMore">Tampilkan lebih banyak</button></div>
   </section>
 
 </main>
@@ -771,7 +723,8 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
    * ========================================================================= */
   const API_URL = 'https://script.google.com/macros/s/AKfycbxK9HQwo5_qqME-Vus5JNbHMO3HaJRELMAhlVjsOfO65uKlh_MdjwaexaQyRIQ2FVQlQQ/exec';
   const POLL_INTERVAL = 15000;
-  const FETCH_TIMEOUT = 10000;
+  const POLL_JITTER = 3000;          // sebaran acak agar ratusan penonton tidak menembak server serentak
+  const FETCH_TIMEOUT = 15000;       // cold start Apps Script bisa >10 detik
   const MAX_BACKOFF = 60000;
   const BACKOFF_STEP = 5000;
   const SEARCH_DEBOUNCE = 250;
@@ -797,6 +750,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
       inFlight: false,
       controller: null,
       timeoutId: null,
+      timedOut: false,
       pollTimeout: null,
       lastHash: '',
       serverOffset: 0,
@@ -807,7 +761,10 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
       inFlight: false,
       controller: null,
       timeoutId: null,
+      timedOut: false,
       loaded: false,
+      rendered: false,
+      raw: '',
       data: [],
       filteredData: []
     },
@@ -826,6 +783,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     el.liveGrid    = $('#liveGrid');
     el.pesertaGrid = $('#pesertaGrid');
     el.searchInput = $('#searchPeserta');
+    el.ptMore      = $('#plMore');
     el.connBadge   = $('#connBadge');
     el.connLabel   = $('#connLabel');
     el.btnFs       = $('#btnFullscreen');
@@ -868,6 +826,15 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     }
   }
 
+  /** Waktu berakhir timer (ms epoch). Prioritas: nilai server (timer_end_ms), cadangan: start + durasi. */
+  function timerEndMs(c) {
+    const e = Number(c.timer_end_ms);
+    if (Number.isFinite(e) && e > 0) return e;
+    const start = c.timer_start ? new Date(c.timer_start).getTime() : 0;
+    const dur = Number(c.timer_duration_sec) || 0;
+    return start && dur ? start + dur * 1000 : 0;
+  }
+
   function hashLiveData(cabangList) {
     let h = '';
     for (const c of cabangList) {
@@ -875,6 +842,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
            c.status_lomba + '|' +
            (c.phase_label || '') + '|' +
            (c.timer_start || '') + '|' +
+           (c.timer_end_ms || '') + '|' +
            (c.timer_duration_sec || '') + '|' +
            (c.sekarang ? c.sekarang.No_Undian : '') + '|' +
            (c.berikut ? c.berikut.No_Undian : '') + '|' +
@@ -956,15 +924,17 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     L.pollTimeout = null;
 
     L.inFlight = true;
+    L.timedOut = false;
     const controller = new AbortController();
     L.controller = controller;
-    L.timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    L.timeoutId = setTimeout(() => { L.timedOut = true; controller.abort(); }, FETCH_TIMEOUT);
 
     try {
       const data = await fetchApi('publik_panggung', controller.signal);
-      if (controller.signal.aborted) return;
 
-      if (data && data.server_time) {
+      if (data && data.server_ms) {
+        L.serverOffset = Number(data.server_ms) - Date.now();
+      } else if (data && data.server_time) {
         const parsed = new Date(data.server_time).getTime();
         if (Number.isFinite(parsed)) L.serverOffset = parsed - Date.now();
       }
@@ -974,16 +944,19 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
         if (newHash !== L.lastHash) {
           L.lastHash = newHash;
           renderLive(data.cabang);
+        } else {
+          maybeStartTicker();   // offset waktu server bisa berubah; pastikan ticker tetap berjalan
         }
         saveCache(LIVE_CACHE_KEY, data);
         L.retryDelay = 0;
         L.loadedOnce = true;
         setConnBadge('ok');
-      } else if (data && data.error) {
-        throw new Error(data.message || 'API error');
+      } else {
+        throw new Error((data && data.message) || 'Respons tidak valid');
       }
     } catch (e) {
-      if (e.name === 'AbortError') return;
+      // Abort karena pagehide (bukan timeout) = bukan kegagalan jaringan.
+      if (e.name === 'AbortError' && !L.timedOut) return;
       console.warn('[live] fetch failed:', e);
       L.retryDelay = Math.min((L.retryDelay || 0) + BACKOFF_STEP, MAX_BACKOFF);
       setConnBadge(L.loadedOnce ? 'warn' : 'error');
@@ -1003,7 +976,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     clearTimeout(state.live.pollTimeout);
     state.live.pollTimeout = null;
     if (state.activeTab !== 'tab-live' || document.hidden) return;
-    const delay = POLL_INTERVAL + (state.live.retryDelay || 0);
+    const delay = POLL_INTERVAL + (state.live.retryDelay || 0) + Math.floor(Math.random() * POLL_JITTER);
     state.live.pollTimeout = setTimeout(loadLive, delay);
   }
 
@@ -1035,8 +1008,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     }
 
     const sorted = cabangList.slice().sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
-    const offset = state.live.serverOffset;
-    const serverNow = Date.now() + offset;
+    const serverNow = Date.now() + state.live.serverOffset;
 
     el.liveGrid.innerHTML = sorted.map(c => renderLiveCard(c, serverNow)).join('');
     el.liveGrid.setAttribute('aria-busy', 'false');
@@ -1061,7 +1033,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
       if (c.mode === 'queue' && c.total_peserta) {
         footerHtml = `
           <div class="lc-footer" style="justify-content: center;">
-            <span>Total Peserta: <strong>${c.total_peserta}</strong></span>
+            <span>Total Peserta: <strong>${esc(c.total_peserta)}</strong></span>
           </div>
         `;
       }
@@ -1073,7 +1045,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
         <div class="lc-main">${now ? esc(now.No_Undian) : '—'}</div>
       `;
       const progress = (typeof c.sudah_tampil === 'number' && c.total_peserta)
-        ? `<span class="lc-progress">${c.sudah_tampil}/${c.total_peserta}</span>` : '';
+        ? `<span class="lc-progress">${esc(c.sudah_tampil)}/${esc(c.total_peserta)}</span>` : '';
       footerHtml = `
         <div class="lc-footer">
           <span>Berikutnya</span>
@@ -1082,15 +1054,13 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
         </div>
       `;
     } else if (c.mode === 'timer') {
-      const startMs = c.timer_start ? new Date(c.timer_start).getTime() : 0;
+      const endMs = timerEndMs(c);
       const durSec = Number(c.timer_duration_sec) || 0;
-      const durMs = durSec * 1000;
 
       let timerStr = durSec ? fmtTimer(durSec) : '00:00:00';
       let timeup = false;
-      if (startMs && durMs) {
-        const elapsed = serverNow - startMs;
-        const sisa = Math.max(0, Math.floor((durMs - elapsed) / 1000));
+      if (endMs) {
+        const sisa = Math.max(0, Math.ceil((endMs - serverNow) / 1000));
         timeup = sisa <= 0;
         timerStr = fmtTimer(sisa);
       }
@@ -1099,8 +1069,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
         <div class="lc-label">${timeup ? 'Waktu Habis' : 'Sisa Waktu'}</div>
         <div class="lc-timer${timeup ? ' is-timeup' : ''}"
              data-timer
-             data-timer-start="${startMs || ''}"
-             data-timer-duration="${durSec || ''}">${timerStr}</div>
+             data-timer-end="${endMs || ''}">${timerStr}</div>
         ${timeup ? '<div class="lc-timeup">WAKTU HABIS</div>' : ''}
       `;
     } else if (c.mode === 'phase') {
@@ -1130,8 +1099,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     const els = document.querySelectorAll('[data-timer]');
     let active = false;
     for (const elm of els) {
-      const startMs = parseInt(elm.dataset.timerStart, 10);
-      if (startMs > 0) { active = true; break; }
+      if (parseInt(elm.dataset.timerEnd, 10) > 0) { active = true; break; }
     }
     if (active) startTicker();
     else stopTicker();
@@ -1155,13 +1123,11 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     let anyActive = false;
 
     for (const elm of els) {
-      const startMs = parseInt(elm.dataset.timerStart, 10);
-      const durSec = parseInt(elm.dataset.timerDuration, 10);
-      if (!startMs || !durSec) continue;
+      const endMs = parseInt(elm.dataset.timerEnd, 10);
+      if (!endMs) continue;
 
       anyActive = true;
-      const elapsed = serverNow - startMs;
-      const sisa = Math.max(0, Math.floor((durSec * 1000 - elapsed) / 1000));
+      const sisa = Math.max(0, Math.ceil((endMs - serverNow) / 1000));
       const txt = fmtTimer(sisa);
       if (elm.textContent !== txt) elm.textContent = txt;
 
@@ -1175,39 +1141,70 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
   }
 
   /* =========================================================================
-   * §10 PESERTA — LOAD / RENDER / SEARCH
+   * §10 PESERTA — LOAD / FILTER / URUT / RENDER
    * ========================================================================= */
+  const PAGE = 60;                                   // baris per "halaman" (render bertahap)
+  const PV_KEY = 'mtq26_pview_v1';
+  const COL = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
+  const CAB_LABEL = {
+    MTQ: "Tilawatil Qur'an", MTtQ: "Tartil Qur'an", MHQ: "Hifdzil Qur'an", Puitisasi: 'Puitisasi Saritilawah',
+    MAz: 'Adzan', LPP: 'Pidato PAI', LCP: 'Cerdas Cermat PAI', Lukis: 'Melukis Islami', Menyanyi: 'Menyanyi Islami'
+  };
+  const SORT_FN = {
+    kapanewon: (a, b) => COL.compare(a.Kapanewon, b.Kapanewon) || COL.compare(a._nama1, b._nama1),
+    nama:      (a, b) => COL.compare(a._title, b._title),
+    sekolah:   (a, b) => COL.compare(a._sekolah1, b._sekolah1) || COL.compare(a._nama1, b._nama1),
+    cabang:    (a, b) => (a._cab - b._cab) || COL.compare(a.Kapanewon, b.Kapanewon) || COL.compare(a._nama1, b._nama1),
+    no:        (a, b) => COL.compare(String(a.No_Pendaftaran), String(b.No_Pendaftaran))
+  };
+  const DIR_LABEL = { 1: 'A–Z ↑', '-1': 'Z–A ↓' };
+  const pv = { q: '', cabang: '', kap: '', sort: 'kapanewon', dir: 1, group: '' };
+  let view = [];            // hasil filter+urut
+  let shown = 0;            // jumlah baris sudah dirender
+  let lastGroup = null;
+  let moreObserver = null;
+
+  function loadPrefs() {
+    try {
+      const o = JSON.parse(sessionStorage.getItem(PV_KEY) || 'null');
+      if (!o) return;
+      if (SORT_FN[o.sort]) pv.sort = o.sort;
+      if (o.dir === -1) pv.dir = -1;
+      if (o.group === 'cabang' || o.group === 'kapanewon') pv.group = o.group;
+      if (typeof o.cabang === 'string') pv.cabang = o.cabang;
+      if (typeof o.kap === 'string') pv.kap = o.kap;
+    } catch (_) {}
+  }
+  function savePrefs() {
+    try { sessionStorage.setItem(PV_KEY, JSON.stringify({ sort: pv.sort, dir: pv.dir, group: pv.group, cabang: pv.cabang, kap: pv.kap })); } catch (_) {}
+  }
+
   async function loadPeserta() {
     const P = state.peserta;
     if (P.inFlight) return;
 
     P.inFlight = true;
+    P.timedOut = false;
     const controller = new AbortController();
     P.controller = controller;
-    P.timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    P.timeoutId = setTimeout(() => { P.timedOut = true; controller.abort(); }, FETCH_TIMEOUT);
     if (el.pesertaGrid) el.pesertaGrid.setAttribute('aria-busy', 'true');
 
     try {
       const data = await fetchApi('publik_peserta_list', controller.signal);
-      if (controller.signal.aborted) return;
 
       if (data && data.status === 'success' && Array.isArray(data.peserta)) {
-        P.data = data.peserta.map(p => decoratePeserta(p));
+        const raw = JSON.stringify(data.peserta);
+        const changed = raw !== P.raw || !P.rendered;     // data sama → tidak render ulang (scroll tidak loncat)
+        P.raw = raw;
         P.loaded = true;
         saveCache(PESERTA_CACHE_KEY, { peserta: data.peserta });
-
-        const q = el.searchInput ? el.searchInput.value : '';
-        if (q && q.trim()) {
-          applySearch(q);
-        } else {
-          P.filteredData = P.data;
-          renderPeserta(P.data);
-        }
+        if (changed) setPesertaData(data.peserta);
       } else {
         throw new Error((data && data.message) || 'Invalid response');
       }
     } catch (e) {
-      if (e.name === 'AbortError') return;
+      if (e.name === 'AbortError' && !P.timedOut) return;
       console.warn('[peserta] fetch failed:', e);
       if (!P.loaded) renderPesertaError();
     } finally {
@@ -1219,23 +1216,33 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
     }
   }
 
+  function setPesertaData(list) {
+    const P = state.peserta;
+    P.data = list.map(decoratePeserta);
+    buildKapOptions();
+    applyView();
+  }
+
   function decoratePeserta(p) {
     const nama1 = p.Nama_Lengkap || p.Nama || '';
     const sekolah1 = p.Asal_Sekolah_1 || p.Asal_Sekolah || p.Sekolah || '';
     const sekolah2 = p.Asal_Sekolah_2 || p.Sekolah_2 || sekolah1;
     const sekolah3 = p.Asal_Sekolah_3 || p.Sekolah_3 || sekolah1;
+    const idx = ORDER.indexOf(p.Cabang);
 
     p._nama1 = nama1;
     p._sekolah1 = sekolah1;
     p._sekolah2 = sekolah2;
     p._sekolah3 = sekolah3;
-
+    p._cab = idx < 0 ? 99 : idx;
+    p._team = p.Cabang === 'LCP' && !!(p.Anggota_2 || p.Anggota_3);
+    p._title = p._team ? 'Tim ' + (p.Kapanewon || '') : nama1;   // judul yang tampil = kunci urut nama
+    p.Kapanewon = p.Kapanewon || '';
     p._search = [
       nama1, p.Anggota_2, p.Anggota_3,
       sekolah1, sekolah2, sekolah3,
-      p.Kapanewon, p.No_Pendaftaran
+      p.Kapanewon, p.Cabang, CAB_LABEL[p.Cabang], p.No_Pendaftaran
     ].filter(Boolean).join(' ').toUpperCase();
-    
     return p;
   }
 
@@ -1249,103 +1256,187 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
         </svg>
         <p>Gagal memuat data peserta.<br>Periksa koneksi internet Anda.</p>
       </div>`;
+    if (el.ptMore) el.ptMore.hidden = true;
   }
 
-  function renderPeserta(list) {
-    if (!el.pesertaGrid) return;
-    el.pesertaGrid.setAttribute('aria-busy', 'false');
+  /** Opsi dropdown kapanewon dari data (urut abjad). */
+  function buildKapOptions() {
+    const sel = $('#ptKap'); if (!sel) return;
+    const set = new Set(state.peserta.data.map(p => p.Kapanewon).filter(Boolean));
+    const arr = Array.from(set).sort(COL.compare);
+    if (pv.kap && !set.has(pv.kap)) pv.kap = '';
+    sel.innerHTML = '<option value="">Semua kapanewon</option>' + arr.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+    sel.value = pv.kap;
+  }
 
-    if (!list.length) {
-      el.pesertaGrid.innerHTML = `
+  /** Chip cabang + jumlah (menghormati pencarian & kapanewon, bukan cabang). */
+  function renderChips(base) {
+    const box = $('#ptChips'); if (!box) return;
+    const cnt = {};
+    for (const p of base) cnt[p.Cabang] = (cnt[p.Cabang] || 0) + 1;
+    const keys = ORDER.filter(k => cnt[k] || k === pv.cabang);
+    for (const k of Object.keys(cnt)) if (!keys.includes(k)) keys.push(k);
+    box.innerHTML =
+      `<button type="button" class="chip" data-cab="" aria-pressed="${pv.cabang === ''}">Semua <small>${base.length}</small></button>` +
+      keys.map(k => `<button type="button" class="chip" data-cab="${esc(k)}" title="${esc(CAB_LABEL[k] || k)}" aria-pressed="${pv.cabang === k}"${cnt[k] ? '' : ' disabled'}>${esc(k)} <small>${cnt[k] || 0}</small></button>`).join('');
+  }
+
+  /** Filter → urut → render halaman pertama. */
+  function applyView() {
+    const P = state.peserta;
+    const tokens = pv.q.toUpperCase().split(/\s+/).filter(Boolean);
+    const base = P.data.filter(p =>
+      (!pv.kap || p.Kapanewon === pv.kap) && tokens.every(t => p._search.includes(t)));
+    renderChips(base);
+    view = pv.cabang ? base.filter(p => p.Cabang === pv.cabang) : base.slice();
+
+    const fn = SORT_FN[pv.sort] || SORT_FN.kapanewon;
+    const dir = pv.dir;
+    const gk = pv.group === 'cabang' ? (a, b) => a._cab - b._cab
+             : pv.group === 'kapanewon' ? (a, b) => COL.compare(a.Kapanewon, b.Kapanewon) : null;
+    view.sort((a, b) => (gk ? gk(a, b) : 0) || dir * fn(a, b));
+    P.filteredData = view;
+
+    syncControls(base.length);
+    renderPeserta();
+  }
+
+  function activeFilterCount() { return (pv.cabang ? 1 : 0) + (pv.kap ? 1 : 0) + (pv.group ? 1 : 0) + (pv.sort !== 'kapanewon' || pv.dir !== 1 ? 1 : 0); }
+
+  function syncControls() {
+    const total = state.peserta.data.length;
+    const n = view.length;
+    $('#ptCount').innerHTML = `<span>${n === total ? `<strong>${total}</strong> peserta` : `Menampilkan <strong>${n}</strong> dari ${total} peserta`}</span>` +
+      `<span>Urut: ${esc({ kapanewon: 'Kapanewon', nama: 'Nama', sekolah: 'Sekolah', cabang: 'Cabang', no: 'No. Pendaftaran' }[pv.sort])} ${pv.dir === 1 ? '↑' : '↓'}</span>`;
+    $('#ptSort').value = pv.sort;
+    $('#ptGroup').value = pv.group;
+    $('#ptKap').value = pv.kap;
+    $('#ptDir').textContent = DIR_LABEL[pv.dir];
+    const filtered = !!(pv.q || pv.cabang || pv.kap);
+    $('#ptReset').hidden = !(filtered || activeFilterCount());
+    $('#ptClear').classList.toggle('show', !!el.searchInput.value);
+    const badge = $('#ptBadge'); const ac = (pv.cabang ? 1 : 0) + (pv.kap ? 1 : 0) + (pv.group ? 1 : 0);
+    badge.textContent = ac; badge.classList.toggle('show', ac > 0);
+    for (const b of $$('#plHead button')) {
+      const on = b.dataset.sort === pv.sort;
+      if (on) b.setAttribute('aria-sort', pv.dir === 1 ? 'ascending' : 'descending'); else b.removeAttribute('aria-sort');
+      b.querySelector('.ar').textContent = on ? (pv.dir === 1 ? '▲' : '▼') : '';
+    }
+  }
+
+  function renderPeserta() {
+    const grid = el.pesertaGrid; if (!grid) return;
+    grid.setAttribute('aria-busy', 'false');
+    state.peserta.rendered = true;
+
+    if (!view.length) {
+      const hasData = state.peserta.data.length > 0;
+      grid.innerHTML = `
         <div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
-          <p>Tidak ada peserta yang cocok.</p>
+          <p>${hasData ? 'Tidak ada peserta yang cocok dengan pencarian/filter.' : 'Belum ada peserta yang terverifikasi.'}</p>
         </div>`;
+      shown = 0; lastGroup = null; updateMore();
       return;
     }
-
-    el.pesertaGrid.innerHTML = list.map(renderPesertaRow).join('');
+    grid.innerHTML = '';
+    shown = 0; lastGroup = null;
+    appendRows(PAGE);
   }
+
+  /** Tambah baris bertahap (tidak merender ulang yang sudah ada → scroll stabil). */
+  function appendRows(n) {
+    const end = Math.min(view.length, shown + n);
+    let h = '';
+    for (let i = shown; i < end; i++) {
+      const p = view[i];
+      if (pv.group) {
+        const g = pv.group === 'cabang' ? p.Cabang : p.Kapanewon;
+        if (g !== lastGroup) {
+          lastGroup = g;
+          const total = view.reduce((c, x) => c + ((pv.group === 'cabang' ? x.Cabang : x.Kapanewon) === g ? 1 : 0), 0);
+          h += `<div class="pl-group"><span>${esc(g)}${pv.group === 'cabang' && CAB_LABEL[g] ? ' — ' + esc(CAB_LABEL[g]) : ''}</span><small>${total} peserta</small></div>`;
+        }
+      }
+      h += renderPesertaRow(p);
+    }
+    el.pesertaGrid.insertAdjacentHTML('beforeend', h);
+    shown = end;
+    updateMore();
+  }
+
+  function updateMore() {
+    const more = el.ptMore; if (!more) return;
+    const rest = view.length - shown;
+    more.hidden = rest <= 0;
+    if (rest > 0) {
+      $('#btnMore').textContent = `Tampilkan ${Math.min(PAGE, rest)} lagi (sisa ${rest})`;
+      if ('IntersectionObserver' in window) {
+        if (!moreObserver) moreObserver = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) loadMore(); }, { rootMargin: '400px' });
+        moreObserver.disconnect(); moreObserver.observe(more);
+      }
+    } else if (moreObserver) moreObserver.disconnect();
+  }
+  function loadMore() { if (shown < view.length) appendRows(PAGE); }
 
   function renderPesertaRow(p) {
-    const isTeam = p.Cabang === 'LCP';
-    const nama1 = p._nama1;
-    const sekolah1 = p._sekolah1;
-    const sekolah2 = p._sekolah2;
-    const sekolah3 = p._sekolah3;
-
-    let mainHtml = `<div class="pr-name">${esc(nama1)}</div>`;
-    
-    // Perbaikan: Judul Tim LCP menggunakan Nama Kapanewon agar tidak dobel dengan nama anggota 1
+    const isTeam = p._team;
+    let nameHtml, schoolHtml;
     if (isTeam) {
-      mainHtml = `
-        <div class="pr-name">Tim ${esc(p.Kapanewon)}</div>
-        <ul class="pr-team-list">
-          <li>
-            <span class="pr-team-num">1.</span>
-            <span class="pr-team-name">${esc(nama1)}</span>
-            <span class="pr-team-school">${esc(sekolah1)}</span>
-          </li>
-          ${p.Anggota_2 ? `
-          <li>
-            <span class="pr-team-num">2.</span>
-            <span class="pr-team-name">${esc(p.Anggota_2)}</span>
-            <span class="pr-team-school">${esc(sekolah2)}</span>
-          </li>` : ''}
-          ${p.Anggota_3 ? `
-          <li>
-            <span class="pr-team-num">3.</span>
-            <span class="pr-team-name">${esc(p.Anggota_3)}</span>
-            <span class="pr-team-school">${esc(sekolah3)}</span>
-          </li>` : ''}
-        </ul>
-      `;
+      const names = [p._nama1, p.Anggota_2, p.Anggota_3].filter(Boolean);
+      const schools = Array.from(new Set([p._sekolah1, p._sekolah2, p._sekolah3].filter(Boolean)));
+      nameHtml = `<div class="pr-name">Tim ${esc(p.Kapanewon)}</div><div class="pr-sub">${names.map((n, i) => `${i + 1}. ${esc(n)}`).join(' · ')}</div>`;
+      schoolHtml = schools.map(esc).join(' / ');
+    } else {
+      nameHtml = `<div class="pr-name">${esc(p._nama1)}</div>`;
+      schoolHtml = esc(p._sekolah1);
     }
-
-    // Kolom Kanan (Asal Sekolah - hanya untuk non-tim)
-    const rightCol = !isTeam ? `
-      <div class="pr-right">
-        <div class="pr-meta-label">Asal Sekolah</div>
-        <div class="pr-meta-val">${esc(sekolah1)}</div>
-      </div>
-    ` : '';
-
-    return `
-      <article class="peserta-row">
-        <!-- Kolom Kiri: Cabang & Kapanewon (2 Baris) -->
-        <div class="pr-left">
-          <div class="pr-meta-label">CABANG</div>
-          <div class="pr-cabang">${esc(p.Cabang)}</div>
-          
-          <div class="pr-meta-label" style="margin-top: 0.6rem;">KAPANEWON</div>
-          <div class="pr-kapanewon">${esc(p.Kapanewon)}</div>
-        </div>
-
-        <!-- Kolom Tengah: Nama / Anggota -->
-        <div class="pr-main">
-          ${mainHtml}
-        </div>
-
-        <!-- Kolom Kanan: Asal Sekolah (Jika ada) -->
-        ${rightCol}
-      </article>
-    `;
+    return `<article class="peserta-row">
+      <div class="pr-no">${esc(p.No_Pendaftaran)}</div>
+      <div class="pr-main">${nameHtml}</div>
+      <div class="pr-school">${schoolHtml || '—'}</div>
+      <div class="pr-kap">${esc(p.Kapanewon)}</div>
+      <div class="pr-cab" title="${esc(CAB_LABEL[p.Cabang] || p.Cabang)}">${esc(p.Cabang)}</div>
+    </article>`;
   }
 
-  function applySearch(q) {
-    const P = state.peserta;
-    const query = String(q || '').toUpperCase().trim();
-    if (!query) {
-      P.filteredData = P.data;
-      renderPeserta(P.data);
-      return;
-    }
-    const filtered = P.data.filter(p => p._search.includes(query));
-    P.filteredData = filtered;
-    renderPeserta(filtered);
+  function setSort(key) {
+    if (!SORT_FN[key]) return;
+    if (pv.sort === key) pv.dir = -pv.dir; else { pv.sort = key; pv.dir = 1; }
+    savePrefs(); applyView();
+  }
+  function resetView() {
+    pv.q = ''; pv.cabang = ''; pv.kap = ''; pv.sort = 'kapanewon'; pv.dir = 1; pv.group = '';
+    el.searchInput.value = '';
+    savePrefs(); applyView();
+  }
+
+  function wirePeserta() {
+    let t = null;
+    el.searchInput.addEventListener('input', e => {
+      const v = e.target.value;
+      $('#ptClear').classList.toggle('show', !!v);
+      clearTimeout(t);
+      t = setTimeout(() => { pv.q = v.trim(); applyView(); }, SEARCH_DEBOUNCE);
+    });
+    $('#ptClear').addEventListener('click', () => { el.searchInput.value = ''; pv.q = ''; applyView(); el.searchInput.focus(); });
+    $('#ptChips').addEventListener('click', e => {
+      const b = e.target.closest('[data-cab]'); if (!b || b.disabled) return;
+      pv.cabang = pv.cabang === b.dataset.cab ? '' : b.dataset.cab; savePrefs(); applyView();
+    });
+    $('#ptKap').addEventListener('change', e => { pv.kap = e.target.value; savePrefs(); applyView(); });
+    $('#ptSort').addEventListener('change', e => { pv.sort = e.target.value; pv.dir = 1; savePrefs(); applyView(); });
+    $('#ptGroup').addEventListener('change', e => { pv.group = e.target.value; savePrefs(); applyView(); });
+    $('#ptDir').addEventListener('click', () => { pv.dir = -pv.dir; savePrefs(); applyView(); });
+    $('#ptReset').addEventListener('click', resetView);
+    $('#plHead').addEventListener('click', e => { const b = e.target.closest('[data-sort]'); if (b) setSort(b.dataset.sort); });
+    $('#btnMore').addEventListener('click', loadMore);
+    $('#ptToggle').addEventListener('click', () => {
+      const open = $('#ptPanel').classList.toggle('open');
+      $('#ptToggle').setAttribute('aria-expanded', String(open));
+    });
   }
 
   /* =========================================================================
@@ -1374,9 +1465,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
 
       if (target === 'tab-peserta') {
         if (state.peserta.loaded) {
-          if (el.pesertaGrid && !el.pesertaGrid.querySelector('.peserta-row')) {
-            renderPeserta(state.peserta.filteredData || state.peserta.data);
-          }
+          if (!state.peserta.rendered) { buildKapOptions(); applyView(); }
           loadPeserta();
         } else if (!state.peserta.inFlight) {
           el.pesertaGrid.setAttribute('aria-busy', 'true');
@@ -1446,12 +1535,7 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     }
 
-    let searchTimer = null;
-    el.searchInput.addEventListener('input', (e) => {
-      clearTimeout(searchTimer);
-      const value = e.target.value;
-      searchTimer = setTimeout(() => applySearch(value), SEARCH_DEBOUNCE);
-    });
+    wirePeserta();
 
     el.btnFs.addEventListener('click', toggleFullscreen);
 
@@ -1484,6 +1568,14 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
       else if ((h === 'live' || h === '') && state.activeTab !== 'tab-live') switchTab('tab-live');
     });
 
+    // Layar kembali dari cache back/forward (bfcache): polling harus dilanjutkan.
+    window.addEventListener('pageshow', (e) => {
+      if (!e.persisted) return;
+      state.live.inFlight = false;
+      state.peserta.inFlight = false;
+      if (state.activeTab === 'tab-live') loadLive();
+    });
+
     window.addEventListener('pagehide', cleanup);
   }
 
@@ -1502,12 +1594,15 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
    * ========================================================================= */
   function bootstrap() {
     cacheDom();
+    loadPrefs();
     wireEvents();
 
     let paintedLive = false;
     const liveCache = loadCache(LIVE_CACHE_KEY);
     if (liveCache && Array.isArray(liveCache.cabang) && liveCache.cabang.length) {
-      if (liveCache.server_time) {
+      if (liveCache.server_ms) {
+        state.live.serverOffset = Number(liveCache.server_ms) - Date.now();
+      } else if (liveCache.server_time) {
         const parsed = new Date(liveCache.server_time).getTime();
         if (Number.isFinite(parsed)) state.live.serverOffset = parsed - Date.now();
       }
@@ -1520,9 +1615,9 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
 
     const pesertaCache = loadCache(PESERTA_CACHE_KEY);
     if (pesertaCache && Array.isArray(pesertaCache.peserta)) {
+      state.peserta.raw = JSON.stringify(pesertaCache.peserta);
       state.peserta.data = pesertaCache.peserta.map(p => decoratePeserta(p));
       state.peserta.loaded = true;
-      state.peserta.filteredData = state.peserta.data;
     }
 
     const h = location.hash.replace('#', '');
@@ -1537,7 +1632,8 @@ body.is-fullscreen .lc-phase { font-size: 1.5rem; }
         pane.classList.toggle('active', pane.id === 'tab-peserta');
       }
       if (state.peserta.loaded) {
-        renderPeserta(state.peserta.data);
+        buildKapOptions();
+        applyView();
       } else {
         el.pesertaGrid.setAttribute('aria-busy', 'true');
       }

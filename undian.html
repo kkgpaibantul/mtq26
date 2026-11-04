@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#F8FAFC" />
+<title>Pengundian Nomor Urut — MTQ 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+   * DESIGN TOKENS (Sama persis dengan admin.html)
+   * ============================================================ */
+  :root {
+    --rose-deep: #4A2E3F;
+    --rose-primary: #9E5F7B;
+    --rose-light: #F3D5E0;
+    --hijau: #2A9D8F;
+    --hijau-light: #E8F6F4;
+    --gold: #E9C46A;
+    --gold-light: #FEF5E7;
+    --ink: #1E293B;
+    --ink-light: #64748B;
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+    --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1);
+    --shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.15);
+    
+    --r-lg: 24px;
+    --trans: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  /* ANTI-SCROLL & FULL SCREEN */
+  html, body {
+    height: 100vh; width: 100vw;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--ink);
+    overflow: hidden; /* Mematikan scrollbar */
+    display: flex; flex-direction: column;
+  }
+
+  /* ============================================================
+   * HEADER
+   * ============================================================ */
+  .header {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2vh 2vw;
+    text-align: center;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+    flex-shrink: 0; /* Mencegah header mengecil */
+  }
+  .header-logo { width: clamp(32px, 5vh, 48px); height: clamp(32px, 5vh, 48px); color: var(--rose-primary); margin-bottom: 0.5vh; }
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.5rem, 4vh, 3rem);
+    color: var(--rose-deep); letter-spacing: 1px; line-height: 1.1;
+  }
+  .header h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(0.8rem, 1.8vh, 1.2rem);
+    color: var(--ink-light); font-weight: 600;
+    margin-top: 0.5vh; text-transform: uppercase; letter-spacing: 2px;
+  }
+  .cabang-badge {
+    margin-top: 1.5vh;
+    background: var(--rose-light); color: var(--rose-deep);
+    padding: 0.8vh 3vw; border-radius: 99px;
+    font-weight: 800; font-size: clamp(0.9rem, 1.8vh, 1.3rem);
+    letter-spacing: 1px; box-shadow: var(--shadow-sm);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90vw;
+  }
+
+  /* ============================================================
+   * MAIN STAGE (FLEX GROW - MENGISI SISA LAYAR)
+   * ============================================================ */
+  .main {
+    flex: 1; /* Mengisi sisa tinggi layar */
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative; padding: 2vh 2vw;
+    background: radial-gradient(circle at 50% 50%, var(--surface) 0%, var(--bg) 100%);
+  }
+
+  .stage {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    padding: clamp(1.5rem, 4vh, 3rem) clamp(2rem, 6vw, 5rem);
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    border: 3px solid var(--gold);
+    width: 100%; max-width: 800px;
+    transform: scale(0.95); transition: var(--trans);
+    position: relative;
+  }
+  
+  .stage.spinning { border-color: var(--rose-primary); box-shadow: var(--shadow-lg), 0 0 30px rgba(158,95,123,0.2); }
+  .stage.pop { transform: scale(1); border-color: var(--hijau); box-shadow: var(--shadow-xl), 0 0 50px rgba(42,157,143,0.3); }
+
+  .no-undian {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(4rem, 18vh, 10rem);
+    font-weight: 900; line-height: 1; color: var(--rose-deep);
+    margin-bottom: 1vh; text-shadow: 0 4px 15px rgba(74,46,63,0.15);
+    transition: var(--trans);
+  }
+  .stage.pop .no-undian { color: var(--hijau); text-shadow: 0 4px 20px rgba(42,157,143,0.3); }
+  .stage.spinning .no-undian { color: var(--ink-light); opacity: 0.5; text-shadow: none; animation: blurFade 0.1s infinite alternate; }
+
+  .nama {
+    font-size: clamp(1.5rem, 5vh, 3.5rem);
+    font-weight: 800; color: var(--ink); line-height: 1.2;
+    margin-bottom: 1vh; transition: var(--trans);
+  }
+  .stage.spinning .nama { opacity: 0.3; filter: blur(4px); }
+
+  .sekolah {
+    font-size: clamp(1rem, 2.5vh, 1.6rem);
+    color: var(--ink-light); font-weight: 600;
+    margin-bottom: 2vh; transition: var(--trans);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .stage.spinning .sekolah { opacity: 0.3; filter: blur(4px); }
+
+  .badge-kap {
+    display: inline-block; background: var(--gold-light); color: var(--rose-deep);
+    padding: 0.8vh 3vw; border-radius: 99px;
+    font-weight: 800; font-size: clamp(0.9rem, 2vh, 1.2rem);
+    letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--gold);
+    transition: var(--trans);
+  }
+  .stage.spinning .badge-kap { opacity: 0; transform: translateY(10px); }
+
+  @keyframes blurFade {
+    0% { opacity: 0.8; transform: translateY(-10px) scale(0.95); filter: blur(2px); }
+    100% { opacity: 0.4; transform: translateY(10px) scale(1.05); filter: blur(8px); }
+  }
+
+  /* ============================================================
+   * FOOTER
+   * ============================================================ */
+  .footer {
+    padding: 2vh 2vw;
+    display: flex; flex-direction: column; align-items: center; gap: 1.5vh;
+    background: var(--surface); border-top: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+  .btn-main {
+    background: var(--rose-deep); color: #fff;
+    font-size: clamp(1rem, 2.5vh, 1.4rem); font-weight: 800;
+    padding: 1.5vh 5vw; border-radius: 99px; border: none; cursor: pointer;
+    transition: var(--trans); box-shadow: var(--shadow-md);
+    display: flex; align-items: center; gap: 1vw; justify-content: center;
+  }
+  .btn-main:hover:not(:disabled) { background: var(--rose-primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .btn-main:disabled { background: var(--border); color: var(--ink-light); cursor: not-allowed; }
+  .btn-main.success { background: var(--hijau); color: #fff; }
+
+  .hint {
+    color: var(--ink-light); font-size: clamp(0.7rem, 1.5vh, 0.9rem);
+    font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .kbd {
+    background: var(--bg); padding: 0.2rem 0.6rem; border-radius: 6px;
+    font-family: monospace; border: 1px solid var(--border); color: var(--rose-deep);
+  }
+
+  /* ============================================================
+   * FALLBACK FORM (Jika dibuka manual via file://)
+   * ============================================================ */
+  .spinner { width: 1em; height: 1em; border: 3px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #setupForm {
+    display: none; flex-direction: column; gap: 1rem; background: var(--surface);
+    padding: 2rem; border-radius: var(--r-lg); box-shadow: var(--shadow-xl); border: 1px solid var(--border);
+    width: 100%; max-width: 400px; margin: auto;
+  }
+  #setupForm h3 { color: var(--rose-deep); text-align: center; margin-bottom: 0.5rem; }
+  #setupForm input { padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; }
+  #setupForm input:focus { border-color: var(--rose-primary); }
+  #setupForm button { background: var(--rose-deep); color: #fff; padding: 0.8rem; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
+
+  /* ============================================================
+   * REKAP SEBELUM FINALISASI
+   * ============================================================ */
+  .recap { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: none; flex-direction: column; }
+  .recap.open { display: flex; }
+  .recap:focus { outline: none; }
+  .recap-head { text-align: center; padding: 2vh 2vw 1.2vh; background: var(--surface); border-bottom: 2px solid var(--border); }
+  .recap-head h3 { font-size: clamp(1.1rem, 2.6vh, 1.6rem); font-weight: 800; letter-spacing: .04em; }
+  .recap-head p { font-size: .85rem; color: var(--ink-light); margin-top: .25rem; }
+  .recap-body { flex: 1; overflow-y: auto; padding: 1.5vh 2vw; }
+  .recap-table { width: 100%; max-width: 980px; margin: 0 auto; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-md); }
+  .recap-table th { background: var(--hijau-light); color: var(--ink); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; text-align: left; padding: .6rem .9rem; position: sticky; top: 0; }
+  .recap-table td { padding: .55rem .9rem; border-top: 1px solid var(--border); font-size: .95rem; vertical-align: top; }
+  .recap-table td.no { font-weight: 800; color: var(--hijau); white-space: nowrap; }
+  .recap-table td small { display: block; color: var(--ink-light); font-size: .8rem; margin-top: .1rem; }
+  .recap-foot { display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: 1.4vh 2vw 2vh; background: var(--surface); border-top: 2px solid var(--border); }
+  .recap-foot .row { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; }
+  .btn-sec { padding: .8rem 1.6rem; border-radius: 999px; border: 2px solid var(--border); background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+  .btn-sec:hover { border-color: var(--ink-light); }
+  .btn-sec:disabled { opacity: .5; cursor: not-allowed; }
+  .recap-foot .btn-main { width: auto; }
+
+  /* DIALOG KUSTOM (pengganti alert/confirm bawaan browser) */
+  .dlg-back { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(30,41,59,.55); padding: 1rem; }
+  .dlg-back.open { display: flex; }
+  .dlg { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-xl); max-width: 460px; width: 100%; padding: 1.6rem 1.6rem 1.3rem; outline: none; }
+  .dlg h4 { font-size: 1.15rem; font-weight: 800; margin-bottom: .5rem; }
+  .dlg p { font-size: .95rem; color: var(--ink-light); line-height: 1.5; white-space: pre-line; }
+  .dlg .acts { display: flex; gap: .6rem; justify-content: flex-end; margin-top: 1.2rem; flex-wrap: wrap; }
+  .dlg .acts button { padding: .65rem 1.3rem; border-radius: 999px; font: inherit; font-weight: 700; cursor: pointer; border: 2px solid var(--border); background: var(--surface); color: var(--ink); }
+  .dlg .acts button.pri { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+</style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <svg class="header-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L3 7v6c0 5 4 9 9 11 5-2 9-6 9-11V7l-9-5z"/></svg>
+    <h1>PENGUNDIAN NOMOR URUT</h1>
+    <h2>MTQ PELAJAR SD KABUPATEN BANTUL 2026</h2>
+    <div class="cabang-badge" id="title">MEMUAT...</div>
+  </header>
+
+  <!-- MAIN STAGE -->
+  <main class="main">
+    
+    <!-- TAMPILAN UTAMA UNDIAN -->
+    <div class="stage" id="card">
+      <div class="no-undian" id="noUndian">-</div>
+      <div class="nama" id="nama">Memuat data...</div>
+      <div class="sekolah" id="sekolah">-</div>
+      <div class="badge-kap" id="kapanewon" style="display:none"></div>
+    </div>
+
+    <!-- FORM DARURAT (Jika Token/Cabang tidak ada) -->
+    <div id="setupForm">
+      <h3>Akses Manual</h3>
+      <p style="font-size: 0.85rem; color: var(--ink-light); text-align: center; margin-bottom: 1rem;">File dibuka tanpa parameter. Masukkan data untuk melanjutkan.</p>
+      <input type="password" id="manualToken" placeholder="Masukkan Token Admin">
+      <input type="text" id="manualCabang" placeholder="Kode Cabang (Cth: MTQ)">
+      <button onclick="handleManualSetup()">Buka Layar Undian</button>
+    </div>
+
+  </main>
+
+  <!-- DIALOG KUSTOM -->
+  <div class="dlg-back" id="dlgBack"><div class="dlg" id="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlgTitle" aria-describedby="dlgMsg" tabindex="-1">
+    <h4 id="dlgTitle"></h4><p id="dlgMsg"></p><div class="acts" id="dlgActs"></div>
+  </div></div>
+
+  <!-- REKAP (muncul setelah peserta terakhir diundi, sebelum disimpan) -->
+  <section class="recap" id="recap" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="recapTitle">
+    <div class="recap-head">
+      <h3 id="recapTitle">REKAP HASIL UNDIAN</h3>
+      <p id="recapSub"></p>
+    </div>
+    <div class="recap-body">
+      <table class="recap-table">
+        <thead><tr><th>No. Undian</th><th>Peserta</th><th>Kapanewon</th></tr></thead>
+        <tbody id="recapRows"></tbody>
+      </table>
+    </div>
+    <div class="recap-foot">
+      <div class="row">
+        <button class="btn-sec" id="btnRecapBack" type="button">← Kembali</button>
+        <button class="btn-main success" id="btnFinal" type="button"><span>💾</span> FINALISASI &amp; SIMPAN</button>
+      </div>
+      <div class="hint">Periksa seluruh nomor di atas. Setelah disimpan, undian tidak dapat diubah kecuali lewat "Reset Undian" di Admin Panel.</div>
+    </div>
+  </section>
+
+  <!-- FOOTER CONTROLS -->
+  <footer class="footer" id="footerControls" style="display: none;">
+    <button class="btn-main" id="btnSpin">
+      <span>🎲</span> MULAI UNDI
+    </button>
+    <div class="hint" id="progress"></div>
+    <div class="hint">
+      Tekan <span class="kbd">Spasi</span> / <span class="kbd">Enter</span> untuk memutar · <span class="kbd">Esc</span> untuk keluar
+    </div>
+  </footer>
+
+<script>
+  'use strict';
+  (() => {
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxK9HQwo5_qqME-Vus5JNbHMO3HaJRELMAhlVjsOfO65uKlh_MdjwaexaQyRIQ2FVQlQQ/exec';
+    const LS_TOKEN = 'mtq_admin_token';
+    const store = {
+      get(k) { try { return sessionStorage.getItem(k) || localStorage.getItem(k); } catch (e) { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* abaikan */ } },
+      del(k) { try { localStorage.removeItem(k); } catch (e) { /* abaikan */ } }
+    };
+    const urlParams = new URLSearchParams(window.location.search);
+    let cabang = urlParams.get('cabang');
+    let token = store.get(LS_TOKEN);
+
+    let pool = [];
+    let results = [];
+    let currentSlot = 1;
+    let totalPeserta = 0;
+    let cabKode = '';
+    let isSpinning = false;
+    let isFinished = false;
+    let isSaving = false;
+    let saved = false;
+    const byId = new Map();     // ID -> data peserta (untuk rekap)
+
+    const $ = s => document.querySelector(s);
+    const draftKey = () => `mtq_undian_draft_${cabang}`;
+
+    /** Angka acak tak-bias (crypto) 0..n-1. */
+    function rnd(n) {
+      if (n <= 1) return 0;
+      const lim = Math.floor(0x100000000 / n) * n;
+      const buf = new Uint32Array(1);
+      do { crypto.getRandomValues(buf); } while (buf[0] >= lim);
+      return buf[0] % n;
+    }
+
+    async function api(action, payload = {}) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 30000);
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, token, ...payload }),
+          signal: ctrl.signal
+        });
+        if (!res.ok) throw new Error('Server error (' + res.status + ')');
+        return await res.json();
+      } catch (e) {
+        if (e.name === 'AbortError') throw new Error('Koneksi timeout. Server terlalu lama merespons.');
+        if (/^Server error/.test(e.message)) throw e;
+        throw new Error('Koneksi gagal. Periksa internet Anda.');
+      } finally { clearTimeout(timer); }
+    }
+    const errMsg = res => (res.error === 'Unauthorized' ? 'Token admin tidak valid/kedaluwarsa. Login ulang di Admin Panel.' : (res.message || String(res.error)));
+
+    // Handler jika user mengisi form manual
+    window.handleManualSetup = () => {
+      const mTok = $('#manualToken').value.trim().toUpperCase();
+      const mCab = $('#manualCabang').value.trim();
+      if (!mTok || !mCab) { dialog('Data belum lengkap', 'Token dan Kode Cabang wajib diisi.'); return; }
+      token = mTok;
+      cabang = mCab;
+      $('#setupForm').style.display = 'none';
+      $('#card').style.display = 'block';
+      init();
+    };
+
+    function showProgress() {
+      $('#progress').textContent = totalPeserta ? `Ditarik ${results.length} dari ${totalPeserta} peserta` : '';
+    }
+    function persist() {
+      store.set(draftKey(), JSON.stringify({ results, t: Date.now() }));
+    }
+    function clearDraft() { store.del(draftKey()); }
+
+    async function init() {
+      if (!token || !cabang) {
+        $('#card').style.display = 'none';
+        $('#setupForm').style.display = 'flex';
+        $('#title').textContent = 'MODE MANUAL';
+        return;
+      }
+      $('#footerControls').style.display = 'flex';
+      $('#btnSpin').disabled = true;
+
+      try {
+        // Label/kode cabang dari endpoint publik (ringan, tanpa data pewara).
+        const cfg = await api('config');
+        const cabData = (cfg.cabang || []).find(c => c.key.toLowerCase() === String(cabang).toLowerCase());
+        if (!cabData) throw new Error('Cabang "' + cabang + '" tidak dikenal.');
+        cabang = cabData.key;            // normalkan huruf besar/kecil (backend case-sensitive)
+        cabKode = cabData.kode;
+        $('#title').textContent = cabData.label;
+
+        const res = await api('admin_peserta', { cabang });
+        if (res.error) throw new Error(errMsg(res));
+        const allPeserta = res.peserta || [];
+        allPeserta.forEach(p => byId.set(p.ID, p));
+        const aktif = allPeserta.filter(p => p.Status === 'terkunci' || p.Status === 'diterima');
+        totalPeserta = aktif.length;
+        pool = aktif.filter(p => !p.No_Undian);
+
+        if (aktif.length && !pool.length) {
+          clearDraft();
+          $('#nama').textContent = 'Cabang ini sudah diundi.';
+          $('#sekolah').textContent = 'Gunakan "Reset Undian" di Admin Panel bila perlu mengulang.';
+          return;
+        }
+        if (!pool.length) {
+          $('#nama').textContent = 'Tidak ada peserta yang siap diundi.';
+          $('#sekolah').textContent = 'Pastikan peserta sudah diverifikasi panitia.';
+          return;
+        }
+
+        // Pulihkan undian yang belum sempat disimpan (mis. layar tertutup/refresh) bila masih cocok dengan data terkini.
+        let restored = 0;
+        try {
+          const d = JSON.parse(store.get(draftKey()) || 'null');
+          const ids = new Set(pool.map(p => p.ID));
+          const valid = d && Array.isArray(d.results) && d.results.length > 0 && d.results.length < pool.length + d.results.length &&
+            d.results.every((r, i) => ids.has(r.ID) && r.No_Undian === `${cabKode}-${i + 1}`) &&
+            new Set(d.results.map(r => r.ID)).size === d.results.length;
+          if (valid) {
+            const done = new Set(d.results.map(r => r.ID));
+            results = d.results.slice();
+            pool = pool.filter(p => !done.has(p.ID));
+            currentSlot = results.length + 1;
+            restored = results.length;
+          } else if (d) clearDraft();
+        } catch (e) { clearDraft(); }
+
+        if (!pool.length) {          // semua sudah ditarik, tinggal simpan
+          isFinished = true;
+          const btn = $('#btnSpin');
+          btn.classList.add('success'); btn.innerHTML = '<span>📋</span> LIHAT REKAP';
+          $('#nama').textContent = 'Undian lengkap — periksa rekap sebelum disimpan.';
+          $('#sekolah').textContent = `${results.length} peserta sudah ditarik`;
+        } else {
+          $('#nama').textContent = restored ? 'Melanjutkan undian' : 'Siap diundi!';
+          $('#sekolah').textContent = restored ? `${restored} sudah ditarik, ${pool.length} peserta tersisa` : `${pool.length} peserta akan diundi`;
+        }
+        $('#btnSpin').disabled = false;
+        showProgress();
+      } catch (e) {
+        $('#nama').textContent = 'Gagal memuat data.';
+        $('#sekolah').textContent = e.message;
+      }
+    }
+
+    async function doSpin() {
+      if (isSpinning || isSaving || pool.length === 0 || isFinished) return;
+      isSpinning = true;
+      $('#btnSpin').disabled = true;
+
+      const card = $('#card');
+      const elNo = $('#noUndian');
+      const elNama = $('#nama');
+      const elSekolah = $('#sekolah');
+      const elKap = $('#kapanewon');
+
+      card.classList.add('spinning');
+      card.classList.remove('pop');
+      elKap.style.display = 'none';
+
+      let tick = 0;
+      const interval = setInterval(() => {
+        const randP = pool[rnd(pool.length)];
+        elNo.textContent = `${cabKode}-${currentSlot}`;
+        elNama.textContent = randP.Nama_Lengkap;
+        elSekolah.textContent = randP.Asal_Sekolah_1 || '-';
+        tick++;
+
+        if (tick > 15) {
+          clearInterval(interval);
+          card.classList.remove('spinning');
+
+          const winner = pool.splice(rnd(pool.length), 1)[0];
+          const noUndian = `${cabKode}-${currentSlot}`;
+          results.push({ ID: winner.ID, No_Undian: noUndian });
+          persist();   // cadangan lokal: hasil tidak hilang bila layar tertutup
+
+          elNo.textContent = noUndian;
+          elNama.textContent = winner.Nama_Lengkap;
+          elSekolah.textContent = winner.Anggota_2
+            ? `${winner.Asal_Sekolah_1} (Tim: ${winner.Nama_Lengkap}, ${winner.Anggota_2}, ${winner.Anggota_3})`
+            : winner.Asal_Sekolah_1;
+          elKap.textContent = winner.Kapanewon;
+          elKap.style.display = 'inline-block';
+          card.classList.add('pop');
+
+          currentSlot++;
+          isSpinning = false;
+          showProgress();
+
+          if (pool.length === 0) {
+            isFinished = true;
+            const btn = $('#btnSpin');
+            btn.classList.add('success');
+            btn.disabled = false;
+            btn.innerHTML = '<span>📋</span> LIHAT REKAP';
+          } else {
+            $('#btnSpin').disabled = false;
+          }
+        }
+      }, 100);
+    }
+
+    /** Dialog kustom; resolve true bila tombol utama ditekan. cancel=null → hanya satu tombol (info). */
+    let dlgOpen = false;
+    function dialog(title, msg, { ok = 'OK', cancel = null } = {}) {
+      return new Promise(resolve => {
+        dlgOpen = true;
+        $('#dlgTitle').textContent = title; $('#dlgMsg').textContent = msg;
+        const acts = $('#dlgActs'); acts.innerHTML = '';
+        const done = v => { dlgOpen = false; $('#dlgBack').classList.remove('open'); document.removeEventListener('keydown', onKey, true); resolve(v); };
+        const mk = (label, cls, v) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (cls) b.className = cls; b.addEventListener('click', () => done(v)); acts.appendChild(b); return b; };
+        if (cancel) mk(cancel, '', false);
+        mk(ok, 'pri', true);
+        const onKey = e => { if (e.code === 'Escape') { e.preventDefault(); e.stopPropagation(); done(false); } else if (e.code === 'Space' || e.code === 'Enter') e.stopPropagation(); };
+        document.addEventListener('keydown', onKey, true);
+        $('#dlgBack').classList.add('open'); $('#dlg').focus();
+      });
+    }
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function openRecap() {
+      if (!isFinished || isSaving) return;
+      const rows = results.slice().sort((a, b) => parseInt(a.No_Undian.split('-').pop(), 10) - parseInt(b.No_Undian.split('-').pop(), 10));
+      $('#recapRows').innerHTML = rows.map(r => {
+        const p = byId.get(r.ID) || {};
+        const tim = p.Anggota_2 ? `<small>Tim: ${esc(p.Nama_Lengkap)}, ${esc(p.Anggota_2)}${p.Anggota_3 ? ', ' + esc(p.Anggota_3) : ''}</small>` : '';
+        return `<tr><td class="no">${esc(r.No_Undian)}</td><td>${esc(p.Nama_Lengkap || r.ID)}<small>${esc(p.Asal_Sekolah_1 || '-')}</small>${tim}</td><td>${esc(p.Kapanewon || '-')}</td></tr>`;
+      }).join('');
+      $('#recapSub').textContent = `${$('#title').textContent} · ${rows.length} peserta`;
+      $('#recap').classList.add('open');
+      $('#recap').focus();   // fokus netral: Enter/Spasi tidak mengaktifkan tombol simpan
+    }
+    function closeRecap() { if (!isSaving) $('#recap').classList.remove('open'); }
+    const recapOpen = () => $('#recap').classList.contains('open');
+
+    async function saveResult() {
+      if (isSaving || saved) return;
+      isSaving = true;
+      const btn = $('#btnFinal');
+      btn.disabled = true; $('#btnRecapBack').disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+      try {
+        const res = await api('admin_save_undian', { cabang, rows: results });
+        if (res.error === 'sudah_diundi') {
+          // Simpanan sebelumnya kemungkinan sudah berhasil (mis. timeout). Jangan menimpa; muat ulang untuk melihat hasil resmi.
+          clearDraft(); saved = true;
+          btn.textContent = 'SUDAH TERSIMPAN';
+          $('#recap').classList.remove('open'); $('#btnSpin').disabled = true; $('#btnSpin').textContent = 'SUDAH TERSIMPAN';
+          $('#nama').textContent = 'Cabang sudah diundi.';
+          $('#sekolah').textContent = 'Penyimpanan sebelumnya berhasil. Periksa nomor undian di Admin Panel.';
+          return;
+        }
+        if (res.error) throw new Error(errMsg(res));
+        saved = true; clearDraft();
+        btn.textContent = 'BERHASIL DISIMPAN!';
+        $('#btnSpin').disabled = true; $('#btnSpin').textContent = 'BERHASIL DISIMPAN!';
+        setTimeout(() => window.close(), 2000);
+      } catch (e) {
+        dialog('Gagal menyimpan', e.message + '\n\nHasil undian TIDAK hilang (tersimpan di layar ini). Klik tombol untuk mencoba lagi.');
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚠️</span> COBA SIMPAN LAGI';
+      } finally { isSaving = false; $('#btnRecapBack').disabled = saved; }
+    }
+
+    window.addEventListener('beforeunload', e => {
+      if (results.length && !saved) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    $('#btnSpin').addEventListener('click', () => {
+      if (isFinished) openRecap();
+      else doSpin();
+    });
+    $('#btnRecapBack').addEventListener('click', closeRecap);
+    $('#btnFinal').addEventListener('click', async () => {
+      if (isSaving || saved || dlgOpen) return;
+      if (await dialog('Simpan sebagai FINAL?', `Hasil undian ${results.length} peserta akan disimpan ke sheet dan tidak dapat diubah kecuali lewat "Reset Undian" di Admin Panel.`, { ok: 'Ya, Simpan', cancel: 'Periksa Lagi' })) saveResult();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || dlgOpen) return;
+      
+      if (recapOpen()) {                      // di layar rekap: simpan HANYA lewat klik tombol (cegah tekan tak sengaja)
+        if (e.code === 'Escape') closeRecap();
+        else if (e.code === 'Space' || e.code === 'Enter') e.preventDefault();
+        return;
+      }
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        if (isFinished) openRecap();
+        else doSpin();
+      } else if (e.code === 'Escape') {
+        if (dlgOpen) return;
+        dialog('Keluar dari layar undian?', results.length && !saved ? 'Hasil undian yang belum disimpan tetap tersimpan sementara di browser ini.' : 'Layar akan ditutup.', { ok: 'Keluar', cancel: 'Batal' }).then(y => { if (y) window.close(); });
+      }
+    });
+
+    // Jalankan inisialisasi
+    init();
+  })();
+</script>
+</body>
+</html>

@@ -517,7 +517,7 @@
   const State = {
     token: lsGet(LS_TOKEN),
     config: {}, acara: {}, cabang: [], kapanewon: [], kriteria: {}, pewara: [],
-    juri: {}, peserta: [], sekolah: new Map(), kop: null
+    juri: {}, peserta: [], sekolah: new Map(), ofisial: new Map(), kop: null
   };
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -888,11 +888,13 @@
       const res = await api('admin_ofisial');
       if (!isLatest('ofisial', n)) return;
       const rows = res.ofisial || [];
+      State.ofisial = new Map(rows.map(o => [o.ID, o]));
       tbody.innerHTML = rows.length ? rows.map(o => `
         <tr>
           <td><b>${esc(o.Kapanewon)}</b></td><td>${esc(o.Nama)}<br><small style="color:var(--ink-light)">${esc(o.Sekolah)}</small></td><td>${esc(o.Email)}</td><td>${esc(o.WA)}</td>
           <td><span class="badge ${o.Status === 'aktif' ? 'aktif' : 'nonaktif'}">${esc(o.Status)}</span></td>
           <td><div class="actions">
+            <button class="btn btn-ghost btn-sm" data-act="ofNama" data-id="${esc(o.ID)}" title="Ubah nama ofisial (mis. menambah gelar)">✎ Nama</button>
             <button class="btn btn-ghost btn-sm" data-act="ofKirim" data-id="${esc(o.ID)}" title="Kirim ulang token ke email">✉ Kirim</button>
             <button class="btn btn-ghost btn-sm" data-act="ofReset" data-id="${esc(o.ID)}" title="Buat token baru">↺ Token</button>
             <button class="btn btn-ghost btn-sm" data-act="ofToggle" data-id="${esc(o.ID)}" data-on="${o.Status === 'aktif' ? '0' : '1'}">${o.Status === 'aktif' ? '⏸' : '▶'}</button>
@@ -1558,6 +1560,19 @@
     sanksi: d => { openSanksi(d.id); }, sanksiGo: (d, el) => sanksiGo(d.id, el),
     ganti: d => openGanti(d.id), gantiGo: (d, el) => gantiGo(d.id, el),
     gpToggle: d => { $(`#gp${d.i}_box`).style.display = $(`#gp${d.i}_on`).checked ? '' : 'none'; },
+    ofNama: d => {
+      const o = State.ofisial.get(d.id); if (!o) return;
+      openModal('Ubah Nama Ofisial — ' + o.Kapanewon, `
+        <div class="form-group"><label class="label">Nama Ofisial (boleh dengan gelar)</label>
+        <input type="text" id="ofNamaInput" class="input" maxlength="100" value="${esc(o.Nama)}" autocomplete="off"></div>
+        <p style="font-size:.8rem;color:var(--ink-light)">Nama baru juga diperbarui pada seluruh data peserta kapanewon ini, sehingga dokumen cetak memakai nama yang sama.</p>
+      `, `<button class="btn btn-ghost" data-act="closeModal">Batal</button><button class="btn btn-primary" data-act="ofNamaSimpan" data-id="${esc(d.id)}">Simpan</button>`);
+      setTimeout(() => { const i = $('#ofNamaInput'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 50);
+    },
+    ofNamaSimpan: (d, el) => guard(el, async () => {
+      const r = await api('admin_ubah_nama_ofisial', { id: d.id, nama: val('ofNamaInput') });
+      toast(r.message || 'Tersimpan', 'success'); closeModal(); await loadOfisial();
+    }),
     ofKirim: async (d, el) => { if (await confirmPromise('Kirim Token', 'Kirim ulang token yang sama ke email ofisial ini?')) guard(el, async () => toast((await api('admin_kirim_ulang_token', { id: d.id })).message || 'Terkirim', 'success')); },
     ofReset: async (d, el) => { if (await confirmPromise('Reset Token', 'Buat token BARU untuk ofisial ini dan kirim ke emailnya? Token lama tidak berlaku.')) guard(el, async () => toast((await api('admin_reset_ofisial_token', { id: d.id })).message || 'OK', 'success')); },
     ofToggle: async (d, el) => { const on = d.on === '1'; if (on || await confirmPromise('Nonaktifkan Ofisial', 'Ofisial tidak akan dapat login. Lanjutkan?')) guard(el, async () => { await api('admin_ofisial_status', { id: d.id, aktif: on }); toast('Status diperbarui', 'success'); await loadOfisial(); }); },

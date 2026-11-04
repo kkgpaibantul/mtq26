@@ -49,7 +49,7 @@
  * ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
-  height: 100%; overflow: hidden; /* Diubah dari 100dvh agar lebih fleksibel */
+  height: 100dvh; overflow: hidden;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   background-color: var(--bg);
   background-image: radial-gradient(var(--border) 1px, transparent 1px);
@@ -77,21 +77,16 @@ a { color: inherit; text-decoration: none; }
 .spinner.light { border-color: rgba(255,255,255,0.3); border-top-color: #fff; }
 
 /* ============================================================
- * §3 APP SHELL (Diperbaiki agar bisa discroll)
+ * §3 APP SHELL
  * ============================================================ */
-#app { 
-  width: 100%; height: 100dvh; 
-  display: flex; align-items: flex-start; justify-content: center; 
-  padding: 3rem 1.5rem; 
-  overflow-y: auto; /* Tambahan agar halaman bisa discroll jika konten panjang */
-}
+#app { width: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
 .screen { display: none; width: 100%; height: 100%; max-width: 1000px; }
 .screen.active { display: flex; animation: fadeIn 0.4s ease; }
 
 #view-dashboard { flex-direction: column; max-width: 1000px; margin: 0 auto; overflow-y: auto; }
-#view-auth { flex-direction: column; justify-content: flex-start; gap: 1.5rem; position: relative; }
+#view-auth { flex-direction: column; justify-content: center; gap: 1.5rem; position: relative; }
 
-#view-loading { flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; text-align: center; padding: 2rem; height: 100%; }
+#view-loading { flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; text-align: center; padding: 2rem; }
 #view-loading .logo-wrap { position: relative; width: 64px; height: 64px; }
 #view-loading .logo-pulse { position: absolute; inset: 0; border-radius: 50%; background: var(--rose-light); opacity: 0.3; animation: pulse 1.8s ease-in-out infinite; }
 #view-loading .logo-inner { position: absolute; inset: 8px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); }
@@ -147,20 +142,10 @@ a { color: inherit; text-decoration: none; }
 .guide-arrow svg { width: 12px; height: 12px; }
 
 /* ============================================================
- * §6 AUTH CARDS (Diperbaiki agar tidak memotong dropdown)
+ * §6 AUTH CARDS
  * ============================================================ */
-.auth-container { 
-  display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; 
-  max-width: 950px; margin: 0 auto; width: 100%; 
-  align-items: start; /* Diubah dari stretch ke start */
-  /* max-height: 65dvh; DIHAPUS agar tidak memotong dropdown */
-}
-.auth-card { 
-  background: var(--surface); border-radius: var(--r-lg); padding: 1.5rem; 
-  box-shadow: var(--shadow-md); border: 1px solid var(--border); 
-  display: flex; flex-direction: column; 
-  /* height: 100%; dan overflow-y: auto; DIHAPUS agar bisa memanjang ke bawah */
-}
+.auth-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; max-width: 950px; margin: 0 auto; width: 100%; align-items: stretch; max-height: 65dvh; }
+.auth-card { background: var(--surface); border-radius: var(--r-lg); padding: 1.5rem; box-shadow: var(--shadow-md); border: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
 .auth-card::-webkit-scrollbar { width: 4px; }
 .auth-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .auth-card h2 { font-size: 1.3rem; margin-bottom: 0.2rem; }
@@ -257,7 +242,7 @@ a { color: inherit; text-decoration: none; }
 .custom-select-trigger.active { border-color: var(--rose-primary); box-shadow: 0 0 0 3px var(--rose-light); }
 .custom-select-trigger span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .custom-select-trigger.empty span { color: var(--ink-light); }
-.custom-select-dropdown { position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 100; display: none; flex-direction: column; max-height: 350px; overflow: hidden; }
+.custom-select-dropdown { position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-lg); border: 1px solid var(--border); z-index: 50; display: none; flex-direction: column; max-height: 260px; overflow: hidden; }
 .custom-select-dropdown.active { display: flex; }
 .custom-select-search { padding: 0.6rem; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; }
 .custom-select-search input { width: 100%; border: 1px solid var(--border); background: var(--surface); padding: 0.5rem 0.8rem; border-radius: var(--r-sm); outline: none; font-size: 0.9rem; }
@@ -314,6 +299,12 @@ a { color: inherit; text-decoration: none; }
 .modal-footer { padding: 1rem 1.5rem 1.5rem; display: flex; gap: 0.8rem; justify-content: flex-end; flex-wrap: wrap; }
 .modal-footer .btn { min-width: 100px; }
 
+.reg-banner { display: none; margin: 0 0 1rem; padding: 0.85rem 1rem; border-radius: var(--r-md, 12px); font-size: 0.88rem; font-weight: 600; line-height: 1.5; text-align: left; border: 1.5px solid; }
+.reg-banner.show { display: block; }
+.reg-banner.closed { background: var(--danger-light, #FDECEC); border-color: var(--danger, #D64545); color: var(--danger, #B42318); }
+.reg-banner.open { background: var(--gold-light, #FEF5E7); border-color: var(--gold, #E9C46A); color: #92400E; }
+.reg-banner strong { font-weight: 800; }
+.branch-card.empty.closed-reg { cursor: not-allowed; opacity: .55; }
 .connection-banner { position: fixed; top: 0; left: 0; right: 0; background: var(--danger); color: #fff; text-align: center; padding: 0.5rem; font-size: 0.85rem; font-weight: 700; z-index: 9999; transform: translateY(-100%); transition: transform 0.3s ease; }
 .connection-banner.show { transform: translateY(0); }
 
@@ -328,7 +319,7 @@ a { color: inherit; text-decoration: none; }
   .back-home { position: static; align-self: flex-start; margin-bottom: 1rem; padding-left: 0; }
 
   #view-loading { min-height: 70dvh; padding-top: 15dvh; }
-  .auth-container { grid-template-columns: 1fr; gap: 1.5rem; }
+  .auth-container { grid-template-columns: 1fr; max-height: none; gap: 1.5rem; }
   .branch-grid { grid-template-columns: 1fr; }
   .appbar { padding: 0.8rem 1rem; margin-bottom: 1rem; }
   .form-content { padding: 1rem; padding-bottom: 120px; }
@@ -359,7 +350,7 @@ a { color: inherit; text-decoration: none; }
   .modal-token { font-size: 1.3rem; letter-spacing: 0.15em; }
   
   .fab-save { width: calc(100% - 1.6rem); bottom: 1rem; padding: 0.9rem; font-size: 0.95rem; }
-  .custom-select-dropdown { max-height: 300px; }
+  .custom-select-dropdown { max-height: 40vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -419,6 +410,8 @@ a { color: inherit; text-decoration: none; }
       </div>
     </div>
 
+    <div class="reg-banner" id="regBannerDash" role="status" aria-live="polite"></div>
+
     <div id="finalizeArea" style="display: none; margin-bottom: 1.5rem; background: var(--surface); padding: 1.5rem; border-radius: var(--r-lg); border: 1.5px solid var(--gold); box-shadow: var(--shadow-md); text-align: center;">
       <h3 style="font-size: 1.1rem; color: var(--rose-deep); margin-bottom: 0.5rem;">Selesai Mengisi Data?</h3>
       <p style="font-size: 0.9rem; margin-bottom: 1.2rem; color: var(--ink-light); line-height: 1.5;">Pastikan semua data peserta dan berkas sudah benar.<br>Setelah difinalisasi, data <strong style="color: var(--danger);">tidak dapat diubah</strong>.</p>
@@ -444,6 +437,7 @@ a { color: inherit; text-decoration: none; }
       <h1 class="main-title">Pendaftaran Peserta</h1>
       <p class="title-sub">MTQ Pelajar SD Tingkat Kabupaten Bantul Tahun 2026</p>
     </div>
+    <div class="reg-banner" id="regBannerAuth" role="status" aria-live="polite"></div>
 
     <div class="guide-steps">
       <div class="guide-step"><span class="guide-step-num">1</span> Isi <b>Daftar Offisial</b></div>
@@ -726,6 +720,7 @@ a { color: inherit; text-decoration: none; }
         if (!res.ok) { const e = new Error(`Server error (${res.status}). Coba lagi.`); e.code = 'HTTP_' + res.status; throw e; }
         const text = await res.text(); let data;
         try { data = JSON.parse(text); } catch { const e = new Error('Respons server tidak valid. Coba lagi.'); e.code = 'BAD_JSON'; throw e; }
+        if (data && data.error === 'closed') { State.serverRegOpen = false; setTimeout(() => { renderRegBanner(); if (_dataLoaded && $('#view-dashboard.active')) renderDashboard(); }, 0); }
         if (data && data.error === 'Unauthorized') { handleUnauthorized(); const e = new Error('Unauthorized'); e.code = 'UNAUTHORIZED'; throw e; }
         return data;
       } finally { clearTimeout(timer); }
@@ -760,6 +755,48 @@ a { color: inherit; text-decoration: none; }
     if (Array.isArray(res.kapanewon) && res.kapanewon.length) State.kapanewon = res.kapanewon;
     State.kuota = parseInt(cfg.kuota_per_kapanewon, 10) || State.kuota || 11;
     State.wajibSekolah = String(cfg.wajib_sekolah_terdaftar || '').toLowerCase() === 'true';
+    renderRegBanner();
+  }
+
+  /* ============================================================
+   * STATUS PENDAFTARAN (buka/tutup + batas waktu)
+   * Server tetap otoritatif; ini hanya peringatan dini agar pengguna tidak mengisi form sia-sia.
+   * ============================================================ */
+  let _regTimer = null;
+  function regDeadlineMs() { const t = Date.parse((State.config || {}).deadline_pendaftaran || ''); return Number.isFinite(t) ? t : null; }
+  function regClosed() {
+    if (State.serverRegOpen === false) return true;
+    const c = State.config || {};
+    if (String(c.pendaftaran_buka || '').toLowerCase() === 'false') return true;
+    const dl = regDeadlineMs();
+    return dl !== null && Date.now() > dl;
+  }
+  function regDeadlineText() {
+    const dl = regDeadlineMs(); if (dl === null) return '';
+    try { return new Intl.DateTimeFormat('id-ID', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Asia/Jakarta' }).format(new Date(dl)).replace(/\./g, ':') + ' WIB'; } catch (e) { return ''; }
+  }
+  const REG_CLOSED_MSG = 'Pendaftaran sudah ditutup. Anda tidak dapat lagi mendaftar, menambah/mengubah peserta, atau mengunggah berkas. Hubungi panitia bila ada kendala.';
+  function renderRegBanner() {
+    const closed = regClosed(), dlTxt = regDeadlineText();
+    let cls = '', html = '';
+    if (closed) {
+      cls = 'closed';
+      html = `⛔ <strong>Pendaftaran sudah ditutup.</strong>${dlTxt ? ` Batas pendaftaran: ${esc(dlTxt)}.` : ''} Pendaftaran baru, penambahan/perubahan peserta, dan unggah berkas tidak dapat dilakukan. Hubungi panitia bila ada kendala.`;
+    } else if (dlTxt) {
+      cls = 'open';
+      html = `🕒 Batas pendaftaran: <strong>${esc(dlTxt)}</strong>. Setelah itu pendaftaran ditutup otomatis.`;
+    }
+    ['#regBannerAuth', '#regBannerDash'].forEach(sel => {
+      const b = $(sel); if (!b) return;
+      b.className = 'reg-banner' + (cls ? ' show ' + cls : '');
+      b.innerHTML = html;
+    });
+    const btnReg = $('#btnRegister');
+    if (btnReg && btnReg._origHTML === undefined) { btnReg.disabled = closed; btnReg.title = closed ? 'Pendaftaran sudah ditutup' : ''; }
+    // jadwalkan pergantian status tepat saat batas waktu lewat (tanpa perlu refresh)
+    clearTimeout(_regTimer);
+    const dl = regDeadlineMs();
+    if (!closed && dl !== null) { const wait = dl - Date.now() + 500; if (wait > 0 && wait < 2147483000) _regTimer = setTimeout(() => { renderRegBanner(); if (_dataLoaded && $('#view-dashboard.active')) renderDashboard(); }, wait); }
   }
 
   async function loadConfigInBackground() {
@@ -795,6 +832,7 @@ a { color: inherit; text-decoration: none; }
 
     const cachedCfg = getCachedConfig();
     if (cachedCfg) { try { applyConfig(cachedCfg); } catch (e) {} }
+    renderRegBanner();
     if (State.token && !State.ofisial) { State.token = null; lsDel(LS_TOKEN); }
 
     const hasToken = !!(State.token && State.ofisial);
@@ -821,6 +859,7 @@ a { color: inherit; text-decoration: none; }
     State.peserta = Array.isArray(pesertaRes.peserta) ? pesertaRes.peserta : [];
     State.slotTerpakai = pesertaRes.slot_terpakai || 0;
     State.kuota = pesertaRes.kuota || State.kuota || 11;
+    if (typeof pesertaRes.pendaftaran_terbuka === 'boolean') { State.serverRegOpen = pesertaRes.pendaftaran_terbuka; renderRegBanner(); }
     lsSet(LS_OFISIAL, State.ofisial);
 
     const ofisialKapanewon = State.ofisial.Kapanewon;
@@ -1091,6 +1130,7 @@ a { color: inherit; text-decoration: none; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inpEmail.value.trim())) return showAlert('Format email tidak valid.', { type: 'error', title: 'Email Tidak Valid' });
       if (!/^08\d{8,13}$/.test(inpWA.value.trim())) return showAlert('Nomor WhatsApp harus diawali 08 dan terdiri 10-15 digit.', { type: 'error', title: 'Nomor WA Tidak Valid' });
 
+      if (regClosed()) return showAlert(REG_CLOSED_MSG, { type: 'warn', title: 'Pendaftaran Ditutup' });
       registerInFlight = true; setBtnLoading(btnReg, 'Memproses...');
       try {
         const res = await api('register_ofisial', { payload: { Kapanewon: selectedKap, Nama_Ofisial: inpNama.value.trim(), Sekolah: selectedSekolah, Email: inpEmail.value.trim().toLowerCase(), WA: inpWA.value.trim() } }, WRITE_OPTS);
@@ -1157,6 +1197,7 @@ a { color: inherit; text-decoration: none; }
 
     $('#dashKapanewon').textContent = State.ofisial?.Kapanewon || '-';
     $('#dashNama').textContent = State.ofisial?.Nama || '-';
+    renderRegBanner();
     const pct = Math.min(100, Math.round((State.slotTerpakai / State.kuota) * 100));
     $('#dashKuotaText').textContent = `${State.slotTerpakai} / ${State.kuota} slot`;
     const prog = $('#dashProgress'); prog.style.width = pct + '%';
@@ -1199,8 +1240,9 @@ a { color: inherit; text-decoration: none; }
         const isLocked = p.Status !== 'menunggu';
         return `<div class="branch-card filled" data-cabang="${esc(c.key)}"><div class="branch-head"><span class="branch-code">${esc(c.kode)}</span>${badge}</div><div class="filled-body"><div class="filled-avatar">${esc((p.Nama_Lengkap || '?').charAt(0))}</div><div class="filled-info"><h4>${esc(p.Nama_Lengkap || '')}</h4><p>${esc(schoolDisplay || '')}</p></div></div>${!isLocked ? `<div class="filled-actions"><button type="button" class="btn btn-ghost btn-sm btn-expand" data-id="${esc(p.ID)}" style="flex:1;">Berkas</button><button type="button" class="btn btn-ghost btn-sm btn-edit" data-id="${esc(p.ID)}">Edit</button><button type="button" class="btn btn-danger btn-sm btn-del" data-id="${esc(p.ID)}">Hapus</button></div><div class="upload-area" id="upload-${esc(p.ID)}">${uploadHtml}</div>` : `<div style="margin-top:0.8rem;font-size:0.75rem;color:var(--ink-light);text-align:center;padding:0.5rem;background:var(--bg);border-radius:var(--r-sm);font-weight:700;">${esc(p.Status.toUpperCase())} — TERKUNCI</div>`}</div>`;
       }
-      const canAdd = State.slotTerpakai + c.slot <= State.kuota;
-      return `<div class="branch-card empty ${canAdd ? 'clickable' : 'disabled'}" data-key="${esc(c.key)}"><div class="empty-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div><div class="empty-text">Daftarkan ${esc(c.kode)}</div><div style="font-size:0.7rem;color:var(--ink-light);margin-top:0.2rem;">${c.team ? 'Tim 3 Siswa' : '1 Siswa'}</div></div>`;
+      const closedReg = regClosed();
+      const canAdd = !closedReg && State.slotTerpakai + c.slot <= State.kuota;
+      return `<div class="branch-card empty ${canAdd ? 'clickable' : 'disabled'}${closedReg ? ' closed-reg' : ''}" data-key="${esc(c.key)}"><div class="empty-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div><div class="empty-text">${closedReg ? 'Pendaftaran ditutup' : 'Daftarkan ' + esc(c.kode)}</div><div style="font-size:0.7rem;color:var(--ink-light);margin-top:0.2rem;">${c.team ? 'Tim 3 Siswa' : '1 Siswa'}</div></div>`;
     }).join('');
     grid.innerHTML = html;
     if (dash) dash.scrollTop = scrollPos;
@@ -1223,6 +1265,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   async function handleDashboardUpload(file, jenis, id, boxEl) {
+    if (regClosed()) { showAlert(REG_CLOSED_MSG, { type: 'warn', title: 'Pendaftaran Ditutup' }); return; }
     const key = `${id}|${jenis}`; if (uploadingKeys.has(key)) return;
     const lim = FILE_LIMITS[jenis] || { maxMB: 2 }; const oldHTML = boxEl.innerHTML;
     uploadingKeys.add(key); boxEl.dataset.uploading = '1'; boxEl.classList.add('uploading');
@@ -1261,6 +1304,7 @@ a { color: inherit; text-decoration: none; }
   function markFormDirty() { if (State.form) State.form.dirty = true; }
 
   function openForm(cabangKey, id = null) {
+    if (regClosed()) { showAlert(REG_CLOSED_MSG, { type: 'warn', title: 'Pendaftaran Ditutup' }); return; }
     const isEdit = !!id; const cab = State.cabangMap[cabangKey];
     if (!cab) { toast('Konfigurasi cabang tidak tersedia.', 'error'); return; }
     let p = {}; if (isEdit) p = State.peserta.find(x => x.ID === id) || {};

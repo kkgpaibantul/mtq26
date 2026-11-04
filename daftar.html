@@ -397,7 +397,7 @@ a { color: inherit; text-decoration: none; }
     <div class="dash-header-area">
       <div class="profile-info">
         <h2 id="dashKapanewon">Kapanewon</h2>
-        <p>Ofisial: <span id="dashNama">Nama</span></p>
+        <p>Ofisial: <span id="dashNama">Nama</span> <button type="button" id="btnUbahNama" class="btn btn-ghost btn-sm" style="padding:0.1rem 0.5rem;font-size:0.72rem;margin-left:0.3rem;" title="Ubah nama (mis. menambah gelar)">✎ Ubah</button></p>
       </div>
       <div class="quota-widget">
         <div class="quota-header">
@@ -797,6 +797,31 @@ a { color: inherit; text-decoration: none; }
     clearTimeout(_regTimer);
     const dl = regDeadlineMs();
     if (!closed && dl !== null) { const wait = dl - Date.now() + 500; if (wait > 0 && wait < 2147483000) _regTimer = setTimeout(() => { renderRegBanner(); if (_dataLoaded && $('#view-dashboard.active')) renderDashboard(); }, wait); }
+  }
+
+  /** Ofisial mengubah namanya sendiri (mis. menambah gelar). Server menyalin nama baru ke data peserta. */
+  let _namaBusy = false;
+  async function ubahNamaOfisial() {
+    if (_namaBusy) return;
+    if (regClosed()) { showAlert(REG_CLOSED_MSG + ' Untuk mengubah nama, hubungi panitia.', { type: 'warn', title: 'Pendaftaran Ditutup' }); return; }
+    const baru = await showPrompt('Ubah nama ofisial (boleh dengan gelar, mis. "Budi Santoso, S.Pd.I"):', { type: 'info', title: 'Ubah Nama Ofisial', okText: 'Simpan', input: { value: State.ofisial?.Nama || '', maxlength: 100, placeholder: 'Nama lengkap dan gelar' } });
+    if (baru === null || baru === undefined) return;
+    const nama = String(baru).replace(/\s+/g, ' ').trim();
+    if (nama.length < 3) { showAlert('Nama minimal 3 karakter.', { type: 'error', title: 'Nama Tidak Valid' }); return; }
+    if (nama === State.ofisial?.Nama) return;
+    _namaBusy = true;
+    const btn = $('#btnUbahNama'); if (btn) btn.disabled = true;
+    try {
+      const res = await api('ubah_nama_ofisial', { nama }, WRITE_OPTS);
+      if (res.error) { await showAlert(res.message || 'Gagal mengubah nama.', { type: 'error', title: 'Gagal' }); return; }
+      State.ofisial = Object.assign({}, State.ofisial, { Nama: res.nama || nama });
+      lsSet(LS_OFISIAL, State.ofisial);
+      $('#dashNama').textContent = State.ofisial.Nama;
+      toast('Nama ofisial diperbarui', 'success');
+    } catch (e) {
+      if (e.code === 'UNAUTHORIZED') return;
+      await showAlert(e.message || 'Gagal mengubah nama.', { type: 'error', title: 'Gagal' });
+    } finally { _namaBusy = false; if (btn) btn.disabled = false; }
   }
 
   async function loadConfigInBackground() {
@@ -1568,6 +1593,7 @@ a { color: inherit; text-decoration: none; }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const btnNama = document.getElementById('btnUbahNama'); if (btnNama) btnNama.addEventListener('click', ubahNamaOfisial);
     const btnLogout = document.getElementById('btnLogout'); if (btnLogout) btnLogout.addEventListener('click', handleLogout);
   });
   window.addEventListener('beforeunload', (e) => { if (saveInFlight || uploadingKeys.size > 0 || (State.form && hasFormData())) { e.preventDefault(); e.returnValue = ''; return ''; } });

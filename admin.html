@@ -209,7 +209,10 @@
       <div id="panel-peserta" class="panel">
         <div class="page-title">
           <span>Kelola Peserta</span>
-          <button class="btn btn-ghost btn-sm" onclick="loadPeserta()">↺ Refresh</button>
+          <span style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" data-act="renameBerkas" title="Samakan nama file akta/berkas di Drive dengan nama pemiliknya (akta anggota LCP)">🗂 Rapikan Nama File Akta</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadPeserta()">↺ Refresh</button>
+          </span>
         </div>
         <div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
           <select id="filterCabangPeserta" class="select" style="max-width:250px;"></select>
@@ -1560,6 +1563,20 @@
     sanksi: d => { openSanksi(d.id); }, sanksiGo: (d, el) => sanksiGo(d.id, el),
     ganti: d => openGanti(d.id), gantiGo: (d, el) => gantiGo(d.id, el),
     gpToggle: d => { $(`#gp${d.i}_box`).style.display = $(`#gp${d.i}_on`).checked ? '' : 'none'; },
+    renameBerkas: async (d, el) => {
+      if (!await confirmPromise('Rapikan Nama File Akta', 'Ganti nama file akta LCP di Google Drive agar sesuai nama pemiliknya (Akta 2 = Anggota 2, Akta 3 = Anggota 3). Isi file tidak berubah dan aman diulang. Lanjutkan?', 'Ya, Rapikan')) return;
+      guard(el, async () => {
+        let mulai = 0, ren = 0, same = 0, gagal = [], total = 0;
+        for (let i = 0; i < 200; i++) {                       // bertahap: server memproses ±20 detik per panggilan
+          const r = await api('admin_rename_berkas', { cabang: 'LCP', mulai }, { timeout: 60000 });
+          ren += r.renamed || 0; same += r.sudah_sesuai || 0; total = r.total; gagal = gagal.concat(r.gagal || []);
+          if (r.selesai) break;
+          mulai = r.berikut;
+          toast(`Merapikan… ${r.diproses}/${r.total}`, 'info');
+        }
+        showAlert('Selesai', `${ren} file diganti namanya, ${same} sudah sesuai (dari ${total} peserta LCP).` + (gagal.length ? `<br><br>Gagal (${gagal.length}): ${esc(gagal.slice(0, 15).join(', '))}${gagal.length > 15 ? '…' : ''}<br><small>Biasanya karena file sudah dihapus dari Drive.</small>` : ''));
+      });
+    },
     ofNama: d => {
       const o = State.ofisial.get(d.id); if (!o) return;
       openModal('Ubah Nama Ofisial — ' + o.Kapanewon, `

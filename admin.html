@@ -211,6 +211,7 @@
           <span>Kelola Peserta</span>
           <span style="display:flex;gap:.4rem;flex-wrap:wrap;">
             <button class="btn btn-success btn-sm" data-act="unduhExcel" title="Unduh daftar peserta per kapanewon (Excel) untuk mail merge surat undangan">📥 Unduh Excel Undangan</button>
+            <button class="btn btn-success btn-sm" data-act="unduhCabang" title="Unduh Excel mail merge per mata lomba (1 baris per cabang, urut No. Undian)">📥 Excel per Cabang (Undian)</button>
             <button class="btn btn-ghost btn-sm" data-act="renameBerkas" title="Samakan nama file akta/berkas di Drive dengan nama pemiliknya (akta anggota LCP)">🗂 Rapikan Nama File Akta</button>
             <button class="btn btn-ghost btn-sm" onclick="loadPeserta()">↺ Refresh</button>
           </span>
@@ -799,6 +800,37 @@
     XLSX.utils.book_append_sheet(wb, mk(rows1, w1), 'Per Kapanewon');
     XLSX.utils.book_append_sheet(wb, mk(rows2, [16, 5, 40, 38, 40]), 'Daftar Peserta');
     return { wb, kap: byKap.size, total: items.length };
+  }
+
+  /** Excel mail merge per cabang: SATU sheet, satu baris per cabang (kolom ke samping). LCP = 3 baris (Anggota 1, 2, 3), tiap baris berisi semua tim. */
+  function buildExcelCabang(XLSX, rows) {
+    const urut = u => { const m = String(u || '').match(/(\d+)\s*$/); return m ? parseInt(m[1], 10) : null; };
+    const belum = [];
+    const groups = [];   // { c, anggota, items }
+    State.cabang.forEach(c => {
+      const items = [];
+      rows.filter(p => p.Cabang === c.key).forEach(p => orangUndangan(p).forEach(o => items.push(Object.assign({ p, no: urut(p.No_Undian), undian: p.No_Undian || '', Kapanewon: p.Kapanewon }, o))));
+      if (!items.length) return;
+      items.sort((a, b) => (a.no === null) - (b.no === null) || (a.no || 0) - (b.no || 0) || String(a.p.No_Pendaftaran).localeCompare(String(b.p.No_Pendaftaran)) || a._m - b._m);
+      if (items.some(i => i.no === null)) belum.push(c.kode || c.key);
+      if (c.team) [0, 1, 2].forEach(m => { const it = items.filter(i => i._m === m); if (it.length) groups.push({ c, anggota: m + 1, items: it }); });
+      else groups.push({ c, anggota: '', items });
+    });
+    if (!groups.length) return { wb: XLSX.utils.book_new(), nCab: 0, nOrang: 0, belum };
+    const maxN = Math.max(...groups.map(g => g.items.length));
+    const head = ['Cabang_Kode', 'Cabang_Lomba', 'Anggota_Ke', 'Jumlah_Peserta', 'Daftar_Teks'];
+    for (let i = 1; i <= maxN; i++) head.push(`Nomor_${i}`, `Nama_${i}`, `Kapanewon_${i}`, `Sekolah_${i}`);
+    const aoa = [head];
+    groups.forEach(({ c, anggota, items }) => {
+      const r = [c.kode || c.key, c.label || c.key, anggota, items.length, items.map(i => `${i.undian || '-'}. ${i.nama} — ${i.Kapanewon} — ${i.sekolah}`).join('\n')];
+      for (let k = 0; k < maxN; k++) { const i = items[k]; r.push(i ? i.undian : '', i ? i.nama : '', i ? i.Kapanewon : '', i ? i.sekolah : ''); }
+      aoa.push(r);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const w = [10, 40, 10, 10, 60]; for (let i = 0; i < maxN; i++) w.push(10, 30, 16, 30);
+    ws['!cols'] = w.map(x => ({ wch: x }));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Per Cabang');
+    return { wb, nCab: new Set(groups.map(g => g.c.key)).size, nOrang: groups.reduce((n, g) => n + g.items.length, 0), baris: groups.length, belum };
   }
 
   async function loadPeserta() {
@@ -1629,6 +1661,27 @@
         <b>2. Daftar Peserta</b> — satu baris per peserta (untuk cek/filter).</p>`,
         `<button class="btn btn-ghost" data-act="closeModal">Batal</button><button class="btn btn-primary" data-act="unduhExcelGo">📥 Unduh</button>`);
     },
+    unduhCabang: () => {
+      openModal('Unduh Excel — Mail Merge per Mata Lomba', `
+        <div class="form-group"><label class="label">Peserta yang disertakan</label>
+        <select id="xlStatus2" class="select">
+          <option value="aktif">Terkunci & Diterima (disarankan)</option>
+          <option value="semua">Semua kecuali ditolak</option>
+        </select></div>
+        <p style="font-size:.82rem;color:var(--ink-light);line-height:1.5">File berisi <b>satu sheet</b>, satu baris per mata lomba (untuk mail merge 1 surat = 1 cabang), kolom ke samping: <code>Nomor_1, Nama_1, Kapanewon_1, Sekolah_1, Nomor_2, …</code> urut No. Undian.<br>
+        <b>LCP dibuat 3 baris</b> (Anggota ke-1, ke-2, ke-3), masing-masing berisi anggota tersebut dari semua tim.</p>`,
+        `<button class="btn btn-ghost" data-act="closeModal">Batal</button><button class="btn btn-primary" data-act="unduhCabangGo">📥 Unduh</button>`);
+    },
+    unduhCabangGo: (d, el) => guard(el, async () => {
+      const mode = val('xlStatus2') || 'aktif';
+      const [XLSX, res] = await Promise.all([loadXLSX(), api('admin_peserta', {}, { timeout: 60000 })]);
+      const rows = (res.peserta || []).filter(p => mode === 'semua' ? p.Status !== 'ditolak' : (p.Status === 'terkunci' || p.Status === 'diterima'));
+      if (!rows.length) { toast('Tidak ada peserta sesuai pilihan.', 'warn'); return; }
+      const { wb, nCab, nOrang, belum } = buildExcelCabang(XLSX, rows);
+      XLSX.writeFile(wb, `Daftar_Per_Cabang_MTQ2026_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      closeModal();
+      toast(`Excel diunduh: ${nCab} cabang (${nOrang} peserta).` + (belum.length ? ` Belum diundi: ${belum.join(', ')}.` : ''), belum.length ? 'warn' : 'success');
+    }),
     unduhExcelGo: (d, el) => guard(el, async () => {
       const mode = val('xlStatus') || 'aktif';
       const [XLSX, res] = await Promise.all([loadXLSX(), api('admin_peserta', {}, { timeout: 60000 })]);

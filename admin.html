@@ -210,6 +210,7 @@
         <div class="page-title">
           <span>Kelola Peserta</span>
           <span style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="btn btn-success btn-sm" data-act="unduhExcel" title="Unduh daftar peserta per kapanewon (Excel) untuk mail merge surat undangan">📥 Unduh Excel Undangan</button>
             <button class="btn btn-ghost btn-sm" data-act="renameBerkas" title="Samakan nama file akta/berkas di Drive dengan nama pemiliknya (akta anggota LCP)">🗂 Rapikan Nama File Akta</button>
             <button class="btn btn-ghost btn-sm" onclick="loadPeserta()">↺ Refresh</button>
           </span>
@@ -747,6 +748,58 @@
         </div></td></tr>`;
     }).join('');
   }
+  /* ---------- Export Excel (mail merge undangan) ---------- */
+  let xlsxPromise = null;
+  function loadXLSX() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (!xlsxPromise) xlsxPromise = new Promise((resolve, reject) => {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      sc.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error('Pustaka Excel gagal dimuat.'));
+      sc.onerror = () => { xlsxPromise = null; reject(new Error('Pustaka Excel tidak dapat dimuat. Periksa koneksi internet lalu coba lagi.')); };
+      document.head.appendChild(sc);
+    });
+    return xlsxPromise;
+  }
+  /** Peserta → { nama, sekolah }. Tim (LCP): nama 3 anggota & sekolah unik dipisah "; ". */
+  function pesertaUndangan(p) {
+    const team = cabangOf(p.Cabang).team;
+    const uniq = a => [...new Set(a.map(x => String(x || '').trim()).filter(Boolean))];
+    return team
+      ? { nama: uniq([p.Nama_Lengkap, p.Anggota_2, p.Anggota_3]).join('; '), sekolah: uniq([p.Asal_Sekolah_1, p.Asal_Sekolah_2, p.Asal_Sekolah_3]).join('; ') }
+      : { nama: String(p.Nama_Lengkap || '').trim(), sekolah: String(p.Asal_Sekolah_1 || '').trim() };
+  }
+  function buildExcelUndangan(XLSX, rows) {
+    const cabIdx = k => { const i = State.cabang.findIndex(c => c.key === k); return i < 0 ? 99 : i; };
+    const kapIdx = k => { const i = State.kapanewon.indexOf(k); return i < 0 ? 999 : i; };
+    const items = rows.map(p => Object.assign({ p, Kapanewon: p.Kapanewon, Cabang: cabangOf(p.Cabang).label || p.Cabang, _ci: cabIdx(p.Cabang) }, pesertaUndangan(p)))
+      .sort((a, b) => kapIdx(a.Kapanewon) - kapIdx(b.Kapanewon) || String(a.Kapanewon).localeCompare(String(b.Kapanewon), 'id') || a._ci - b._ci || String(a.nama).localeCompare(String(b.nama), 'id'));
+    const byKap = new Map();
+    items.forEach(it => { if (!byKap.has(it.Kapanewon)) byKap.set(it.Kapanewon, []); byKap.get(it.Kapanewon).push(it); });
+    const maxN = Math.max(...[...byKap.values()].map(a => a.length));
+
+    // Sheet 1: satu baris per kapanewon (lebar) — siap mail merge
+    const head1 = ['Kapanewon', 'Nama_Ofisial', 'WA_Ofisial', 'Jumlah_Peserta', 'Daftar_Teks'];
+    for (let i = 1; i <= maxN; i++) head1.push(`Nama_${i}`, `Cabang_${i}`, `Sekolah_${i}`);
+    const rows1 = [head1];
+    byKap.forEach((arr, kap) => {
+      const r = [kap, arr[0].p.Nama_Ofisial || '', arr[0].p.WA_Ofisial || '', arr.length,
+        arr.map((x, i) => `${i + 1}. ${x.nama} — ${x.Cabang} — ${x.sekolah}`).join('\n')];
+      for (let i = 0; i < maxN; i++) { const x = arr[i]; r.push(x ? x.nama : '', x ? x.Cabang : '', x ? x.sekolah : ''); }
+      rows1.push(r);
+    });
+    // Sheet 2: satu baris per peserta
+    const rows2 = [['Kapanewon', 'No', 'Nama_Peserta', 'Cabang_Lomba', 'Asal_Sekolah']];
+    byKap.forEach((arr, kap) => arr.forEach((x, i) => rows2.push([kap, i + 1, x.nama, x.Cabang, x.sekolah])));
+
+    const mk = (aoa, widths) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = widths.map(w => ({ wch: w })); ws['!freeze'] = { xSplit: 0, ySplit: 1 }; return ws; };
+    const w1 = [16, 28, 16, 10, 60]; for (let i = 0; i < maxN; i++) w1.push(30, 34, 30);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, mk(rows1, w1), 'Per Kapanewon');
+    XLSX.utils.book_append_sheet(wb, mk(rows2, [16, 5, 40, 38, 40]), 'Daftar Peserta');
+    return { wb, kap: byKap.size, total: items.length };
+  }
+
   async function loadPeserta() {
     const tbody = $('#tablePeserta tbody');
     const n = nextSeq('peserta');
@@ -1563,6 +1616,28 @@
     sanksi: d => { openSanksi(d.id); }, sanksiGo: (d, el) => sanksiGo(d.id, el),
     ganti: d => openGanti(d.id), gantiGo: (d, el) => gantiGo(d.id, el),
     gpToggle: d => { $(`#gp${d.i}_box`).style.display = $(`#gp${d.i}_on`).checked ? '' : 'none'; },
+    unduhExcel: () => {
+      openModal('Unduh Excel — Daftar Peserta per Kapanewon', `
+        <div class="form-group"><label class="label">Peserta yang disertakan</label>
+        <select id="xlStatus" class="select">
+          <option value="aktif">Terkunci & Diterima (disarankan untuk undangan)</option>
+          <option value="semua">Semua kecuali ditolak (termasuk Menunggu)</option>
+        </select></div>
+        <p style="font-size:.82rem;color:var(--ink-light);line-height:1.5">File berisi 2 sheet:<br>
+        <b>1. Per Kapanewon</b> — satu baris per kapanewon (untuk mail merge: 1 surat = 1 kapanewon, tabel berisi Nama Peserta, Cabang Lomba, Asal Sekolah).<br>
+        <b>2. Daftar Peserta</b> — satu baris per peserta (untuk cek/filter).</p>`,
+        `<button class="btn btn-ghost" data-act="closeModal">Batal</button><button class="btn btn-primary" data-act="unduhExcelGo">📥 Unduh</button>`);
+    },
+    unduhExcelGo: (d, el) => guard(el, async () => {
+      const mode = val('xlStatus') || 'aktif';
+      const [XLSX, res] = await Promise.all([loadXLSX(), api('admin_peserta', {}, { timeout: 60000 })]);
+      let rows = (res.peserta || []).filter(p => mode === 'semua' ? p.Status !== 'ditolak' : (p.Status === 'terkunci' || p.Status === 'diterima'));
+      if (!rows.length) { toast('Tidak ada peserta sesuai pilihan.', 'warn'); return; }
+      const { wb, kap, total } = buildExcelUndangan(XLSX, rows);
+      const tgl = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Daftar_Peserta_Undangan_MTQ2026_${tgl}.xlsx`);
+      closeModal(); toast(`Excel diunduh: ${total} peserta dari ${kap} kapanewon.`, 'success');
+    }),
     renameBerkas: async (d, el) => {
       if (!await confirmPromise('Rapikan Nama File Akta', 'Ganti nama file akta LCP di Google Drive agar sesuai nama pemiliknya (Akta 2 = Anggota 2, Akta 3 = Anggota 3). Isi file tidak berubah dan aman diulang. Lanjutkan?', 'Ya, Rapikan')) return;
       guard(el, async () => {

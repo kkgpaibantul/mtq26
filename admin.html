@@ -761,19 +761,20 @@
     });
     return xlsxPromise;
   }
-  /** Peserta → { nama, sekolah }. Tim (LCP): nama 3 anggota & sekolah unik dipisah "; ". */
-  function pesertaUndangan(p) {
-    const team = cabangOf(p.Cabang).team;
-    const uniq = a => [...new Set(a.map(x => String(x || '').trim()).filter(Boolean))];
-    return team
-      ? { nama: uniq([p.Nama_Lengkap, p.Anggota_2, p.Anggota_3]).join('; '), sekolah: uniq([p.Asal_Sekolah_1, p.Asal_Sekolah_2, p.Asal_Sekolah_3]).join('; ') }
-      : { nama: String(p.Nama_Lengkap || '').trim(), sekolah: String(p.Asal_Sekolah_1 || '').trim() };
+  /** Peserta → daftar orang. Tim (LCP) = 3 baris (satu per anggota, dengan sekolah masing-masing); cabang individu = 1 baris. */
+  function orangUndangan(p) {
+    const t = v => String(v || '').trim();
+    if (!cabangOf(p.Cabang).team) return [{ nama: t(p.Nama_Lengkap), sekolah: t(p.Asal_Sekolah_1), _m: 0 }];
+    return [[p.Nama_Lengkap, p.Asal_Sekolah_1], [p.Anggota_2, p.Asal_Sekolah_2], [p.Anggota_3, p.Asal_Sekolah_3]]
+      .map(([n, sk], i) => ({ nama: t(n), sekolah: t(sk) || t(p.Asal_Sekolah_1), _m: i })).filter(x => x.nama);
   }
   function buildExcelUndangan(XLSX, rows) {
     const cabIdx = k => { const i = State.cabang.findIndex(c => c.key === k); return i < 0 ? 99 : i; };
     const kapIdx = k => { const i = State.kapanewon.indexOf(k); return i < 0 ? 999 : i; };
-    const items = rows.map(p => Object.assign({ p, Kapanewon: p.Kapanewon, Cabang: cabangOf(p.Cabang).label || p.Cabang, _ci: cabIdx(p.Cabang) }, pesertaUndangan(p)))
-      .sort((a, b) => kapIdx(a.Kapanewon) - kapIdx(b.Kapanewon) || String(a.Kapanewon).localeCompare(String(b.Kapanewon), 'id') || a._ci - b._ci || String(a.nama).localeCompare(String(b.nama), 'id'));
+    const items = [];
+    rows.forEach(p => orangUndangan(p).forEach(o => items.push(Object.assign({ p, Kapanewon: p.Kapanewon, Cabang: cabangOf(p.Cabang).label || p.Cabang, _ci: cabIdx(p.Cabang), team: !!cabangOf(p.Cabang).team, _no: p.No_Pendaftaran }, o))));
+    items.sort((a, b) => kapIdx(a.Kapanewon) - kapIdx(b.Kapanewon) || String(a.Kapanewon).localeCompare(String(b.Kapanewon), 'id') || a._ci - b._ci
+      || (a.team ? String(a._no).localeCompare(String(b._no)) || a._m - b._m : String(a.nama).localeCompare(String(b.nama), 'id')));
     const byKap = new Map();
     items.forEach(it => { if (!byKap.has(it.Kapanewon)) byKap.set(it.Kapanewon, []); byKap.get(it.Kapanewon).push(it); });
     const maxN = Math.max(...[...byKap.values()].map(a => a.length));
@@ -1624,7 +1625,7 @@
           <option value="semua">Semua kecuali ditolak (termasuk Menunggu)</option>
         </select></div>
         <p style="font-size:.82rem;color:var(--ink-light);line-height:1.5">File berisi 2 sheet:<br>
-        <b>1. Per Kapanewon</b> — satu baris per kapanewon (untuk mail merge: 1 surat = 1 kapanewon, tabel berisi Nama Peserta, Cabang Lomba, Asal Sekolah).<br>
+        <b>1. Per Kapanewon</b> — satu baris per kapanewon (untuk mail merge: 1 surat = 1 kapanewon, tabel berisi Nama Peserta, Cabang Lomba, Asal Sekolah). Cabang LCP dipecah menjadi 3 baris (satu per anggota).<br>
         <b>2. Daftar Peserta</b> — satu baris per peserta (untuk cek/filter).</p>`,
         `<button class="btn btn-ghost" data-act="closeModal">Batal</button><button class="btn btn-primary" data-act="unduhExcelGo">📥 Unduh</button>`);
     },

@@ -280,7 +280,7 @@
 
       <!-- 5. PEJABAT -->
       <div id="panel-pejabat" class="panel">
-        <div class="page-title"><span>Juri · Pewara · Panitia</span></div>
+        <div class="page-title"><span>Juri · Pewara · Panitia</span><button class="btn btn-success btn-sm" data-act="unduhJuri" title="Unduh Excel: cabang lomba, nama juri, kriteria penilaian 1–4 (untuk mail merge)">📥 Excel Juri & Kriteria</button></div>
 
         <div class="stat-card" style="margin-bottom:1.5rem;">
           <h3 style="margin-bottom:1rem;">📋 Panitia & Pejabat (Tampil di Dokumen)</h3>
@@ -653,6 +653,7 @@
     State.config = o.config || {};
     State.acara = o.acara || {};
     State.kriteria = o.kriteria || {};
+    State.lcpFase = o.lcp_fase || [];
     State.pewara = o.pewara || [];
   }
   const showApp = () => { $('#view-login').style.display = 'none'; $('#app').style.display = 'flex'; };
@@ -800,6 +801,39 @@
     XLSX.utils.book_append_sheet(wb, mk(rows1, w1), 'Per Kapanewon');
     XLSX.utils.book_append_sheet(wb, mk(rows2, [16, 5, 40, 38, 40]), 'Daftar Peserta');
     return { wb, kap: byKap.size, total: items.length };
+  }
+
+  /** Kriteria penilaian per cabang (maks 4). LCP: babak penyisihan, wajib timing, wajib lempar rebut, rebutan. */
+  const LCP_KRITERIA = [['penyisihan', 'Babak Penyisihan'], ['final_wajib', 'Final — Soal Wajib Timing'], ['final_lempar', 'Final — Soal Wajib Lempar Rebut'], ['final_rebutan', 'Final — Soal Rebutan']];
+  function kriteriaCabang(c) {
+    if (c.key === 'LCP') {
+      const fm = new Map((State.lcpFase || []).map(f => [f.key, f]));
+      return LCP_KRITERIA.map(([k, label]) => {
+        const f = fm.get(k) || {};
+        const sg = n => (n > 0 ? '+' : '') + n;
+        return { label: f.soal ? `${label} (${f.soal} soal)` : label, bobot: f.benar !== undefined ? `benar ${sg(f.benar)}` + (f.salah ? `; salah ${sg(f.salah)}` : '') : '' };
+      });
+    }
+    return (((State.kriteria || {})[c.key] || {}).kriteria || []).map(k => ({ label: k.label, bobot: k.min !== undefined ? `${k.min}–${k.max}` : `maks ${k.max}` }));
+  }
+  function buildExcelJuri(XLSX, juri) {
+    const aoa = [['Cabang_Lomba', 'Cabang_Kode', 'No_Juri', 'Nama_Juri', 'Kriteria_1', 'Bobot_1', 'Kriteria_2', 'Bobot_2', 'Kriteria_3', 'Bobot_3', 'Kriteria_4', 'Bobot_4']];
+    const tanpaJuri = []; let nJuri = 0, nCab = 0;
+    State.cabang.forEach(c => {
+      const list = juri.filter(j => j.Cabang === c.key).sort((a, b) => Number(a.Urutan) - Number(b.Urutan));
+      if (!list.length) { tanpaJuri.push(c.kode || c.key); return; }
+      nCab++;
+      const kr = kriteriaCabang(c);
+      list.forEach((j, i) => {
+        const r = [c.label || c.key, c.kode || c.key, Number(j.Urutan) || i + 1, j.Nama_Juri || ''];
+        for (let k = 0; k < 4; k++) r.push(kr[k] ? kr[k].label : '', kr[k] ? kr[k].bobot : '');
+        aoa.push(r); nJuri++;
+      });
+    });
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [40, 10, 8, 34, 34, 18, 34, 18, 34, 18, 34, 18].map(w => ({ wch: w }));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Juri & Kriteria');
+    return { wb, nJuri, nCab, tanpaJuri };
   }
 
   /** Excel mail merge per cabang: SATU sheet, satu baris per cabang (kolom ke samping). LCP = 3 baris (Anggota 1, 2, 3), tiap baris berisi semua tim. */
@@ -1661,6 +1695,14 @@
         <b>2. Daftar Peserta</b> — satu baris per peserta (untuk cek/filter).</p>`,
         `<button class="btn btn-ghost" data-act="closeModal">Batal</button><button class="btn btn-primary" data-act="unduhExcelGo">📥 Unduh</button>`);
     },
+    unduhJuri: (d, el) => guard(el, async () => {
+      const [XLSX, res, opsi] = await Promise.all([loadXLSX(), api('admin_juri', {}, { timeout: 60000 }), api('admin_opsi')]);
+      applyOpsi(opsi);
+      const { wb, nJuri, nCab, tanpaJuri } = buildExcelJuri(XLSX, (res.juri || []).filter(j => j.Status === 'aktif'));
+      if (!nJuri) { toast('Belum ada juri aktif.', 'warn'); return; }
+      XLSX.writeFile(wb, `Juri_dan_Kriteria_MTQ2026_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast(`Excel diunduh: ${nJuri} juri dari ${nCab} cabang.` + (tanpaJuri.length ? ` Belum ada juri: ${tanpaJuri.join(', ')}.` : ''), tanpaJuri.length ? 'warn' : 'success');
+    }),
     unduhCabang: () => {
       openModal('Unduh Excel — Mail Merge per Mata Lomba', `
         <div class="form-group"><label class="label">Peserta yang disertakan</label>

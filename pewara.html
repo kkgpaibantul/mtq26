@@ -927,7 +927,7 @@ input[type=number]{-moz-appearance:textfield}
 
     const rows = getRows();
     if (!rows.length) return;
-    const firstIncomplete = rows.find(r => !isRowComplete(r));
+    const firstIncomplete = rows.find(r => isPesertaHadir(r) && !isRowComplete(r));
 
     try {
       if (firstIncomplete) {
@@ -977,7 +977,7 @@ input[type=number]{-moz-appearance:textfield}
       } else if (cab === 'Lukis') {
         return;
       } else {
-        const firstIncomplete = rows.find(r => !isRowComplete(r));
+        const firstIncomplete = rows.find(r => isPesertaHadir(r) && !isRowComplete(r));
         if (firstIncomplete) {
           await api('panggung_update', { action_panggung: 'set_manual', no_undian: firstIncomplete.No_Undian }, { timeout: 10000 });
         } else if (rows.length > 0) {
@@ -2263,7 +2263,7 @@ input[type=number]{-moz-appearance:textfield}
           await api('panggung_update', { action_panggung: 'phase_set', phase_label: label }, { timeout: 15000 });
         }
       } else {
-        const firstIncomplete = rows.find(r => !isRowComplete(r));
+        const firstIncomplete = rows.find(r => isPesertaHadir(r) && !isRowComplete(r));
         if (firstIncomplete) {
           await api('panggung_update', { action_panggung: 'set_manual', no_undian: firstIncomplete.No_Undian }, { timeout: 15000 });
         } else if (rows.length > 0) {

@@ -1951,14 +1951,14 @@ input[type=number]{-moz-appearance:textfield}
         const j = inp.dataset.juri;
         if (!juriMap[j]) juriMap[j] = { filled: 0, sum: 0 };
         const v = parseFloat(inp.value);
-        if (!isNaN(v) && inp.value !== '') { juriMap[j].sum += v; juriMap[j].filled++; }
+        if (!isNaN(v) && inp.value !== '') { juriMap[j].sum += Math.round(v * 100); juriMap[j].filled++; }   // sen: sama dengan backend
       });
 
       Object.values(juriMap).forEach(j => {
         if (j.filled === critCount) { totalSum += j.sum; completeJuri++; }
       });
 
-      if (completeJuri === juriCount) data.push({ no, nama, total: totalSum / juriCount });
+      if (completeJuri === juriCount) data.push({ no, nama, total: Math.round(totalSum / juriCount) / 100 });
     });
 
     data.sort((a, b) => b.total - a.total);

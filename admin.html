@@ -280,7 +280,7 @@
 
       <!-- 5. PEJABAT -->
       <div id="panel-pejabat" class="panel">
-        <div class="page-title"><span>Juri · Pewara · Panitia</span><button class="btn btn-success btn-sm" data-act="unduhJuri" title="Unduh Excel: cabang lomba, nama juri, kriteria penilaian 1–4 (untuk mail merge)">📥 Excel Juri & Kriteria</button></div>
+        <div class="page-title"><span>Juri · Pewara · Panitia</span><button class="btn btn-success btn-sm" data-act="unduhJuri" title="Unduh Excel: 1 baris per cabang — Juri 1…N dan Kriteria 1–4 (untuk mail merge)">📥 Excel Juri & Kriteria</button></div>
 
         <div class="stat-card" style="margin-bottom:1.5rem;">
           <h3 style="margin-bottom:1rem;">📋 Panitia & Pejabat (Tampil di Dokumen)</h3>
@@ -828,24 +828,26 @@
     }
     return (((State.kriteria || {})[c.key] || {}).kriteria || []).map(k => ({ label: k.label, bobot: k.min !== undefined ? `${k.min}–${k.max}` : `maks ${k.max}` }));
   }
+  /** Excel juri: SATU baris per cabang (9 baris). Kolom ke samping: Juri_1..N (+ NIP), Kriteria_1..4 (+ Bobot). */
   function buildExcelJuri(XLSX, juri) {
-    const aoa = [['Cabang_Lomba', 'Cabang_Kode', 'No_Juri', 'Nama_Juri', 'Kriteria_1', 'Bobot_1', 'Kriteria_2', 'Bobot_2', 'Kriteria_3', 'Bobot_3', 'Kriteria_4', 'Bobot_4']];
-    const tanpaJuri = []; let nJuri = 0, nCab = 0;
-    State.cabang.forEach(c => {
-      const list = juri.filter(j => j.Cabang === c.key).sort((a, b) => Number(a.Urutan) - Number(b.Urutan));
-      if (!list.length) { tanpaJuri.push(c.kode || c.key); return; }
-      nCab++;
+    const per = State.cabang.map(c => ({ c, list: juri.filter(j => j.Cabang === c.key).sort((a, b) => Number(a.Urutan) - Number(b.Urutan)) }));
+    const maxJ = Math.max(4, ...per.map(x => x.list.length));
+    const head = ['Cabang_Lomba', 'Cabang_Kode', 'Jumlah_Juri'];
+    for (let i = 1; i <= maxJ; i++) head.push(`Juri_${i}`, `NIP_Juri_${i}`);
+    for (let k = 1; k <= 4; k++) head.push(`Kriteria_${k}`, `Bobot_${k}`);
+    const aoa = [head]; const tanpaJuri = []; let nJuri = 0, nCab = 0;
+    per.forEach(({ c, list }) => {
+      if (list.length) { nCab++; nJuri += list.length; } else tanpaJuri.push(c.kode || c.key);
       const kr = kriteriaCabang(c);
-      list.forEach((j, i) => {
-        const r = [c.label || c.key, c.kode || c.key, Number(j.Urutan) || i + 1, j.Nama_Juri || ''];
-        for (let k = 0; k < 4; k++) r.push(kr[k] ? kr[k].label : '', kr[k] ? kr[k].bobot : '');
-        aoa.push(r); nJuri++;
-      });
+      const r = [c.label || c.key, c.kode || c.key, list.length];
+      for (let i = 0; i < maxJ; i++) r.push(list[i] ? list[i].Nama_Juri || '' : '', list[i] ? list[i].NIP || '' : '');
+      for (let k = 0; k < 4; k++) r.push(kr[k] ? kr[k].label : '', kr[k] ? kr[k].bobot : '');
+      aoa.push(r);
     });
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [40, 10, 8, 34, 34, 18, 34, 18, 34, 18, 34, 18].map(w => ({ wch: w }));
+    ws['!cols'] = head.map((h, i) => ({ wch: i === 0 ? 40 : i < 3 ? 12 : /^Juri_/.test(h) ? 30 : /^NIP/.test(h) ? 22 : /^Kriteria/.test(h) ? 34 : 16 }));
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Juri & Kriteria');
-    return { wb, nJuri, nCab, tanpaJuri };
+    return { wb, nJuri, nCab, tanpaJuri, nBaris: per.length };
   }
 
   /** Excel mail merge per cabang: SATU sheet, satu baris per cabang (kolom ke samping). LCP = 3 baris (Anggota 1, 2, 3), tiap baris berisi semua tim. */
@@ -1763,7 +1765,7 @@
       const { wb, nJuri, nCab, tanpaJuri } = buildExcelJuri(XLSX, (res.juri || []).filter(j => j.Status === 'aktif'));
       if (!nJuri) { toast('Belum ada juri aktif.', 'warn'); return; }
       XLSX.writeFile(wb, `Juri_dan_Kriteria_MTQ2026_${new Date().toISOString().slice(0, 10)}.xlsx`);
-      toast(`Excel diunduh: ${nJuri} juri dari ${nCab} cabang.` + (tanpaJuri.length ? ` Belum ada juri: ${tanpaJuri.join(', ')}.` : ''), tanpaJuri.length ? 'warn' : 'success');
+      toast(`Excel diunduh: ${nCab} cabang berjuri, ${nJuri} juri.` + (tanpaJuri.length ? ` Belum ada juri: ${tanpaJuri.join(', ')}.` : ''), tanpaJuri.length ? 'warn' : 'success');
     }),
     unduhCabang: () => {
       openModal('Unduh Excel — Mail Merge per Mata Lomba', `

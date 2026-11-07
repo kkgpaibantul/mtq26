@@ -1241,7 +1241,7 @@
   }
   function statusCab(cabang) {
     openModal('Ubah Status ' + cabang, `
-      <p style="font-size:0.85rem;color:var(--ink-light);margin-bottom:1rem;">Hati-hati! Status <b>DRAFT</b> mereset tahapan LCP dan <b>menghapus nilai/state cabang</b> serta membuka kunci penilaian.</p>
+      <p style="font-size:0.85rem;color:var(--ink-light);margin-bottom:1rem;">Hati-hati! Status <b>DRAFT</b> mereset keputusan seri, finalis dan tahap LCP serta membuka kunci penilaian. Nilai juri <b>tidak</b> dihapus. Status <b>FINAL</b> ditolak bila nilai belum lengkap atau masih ada seri (bisa dipaksa dengan konfirmasi).</p>
       <div class="form-group"><label class="label">Status Baru</label>
         <select id="psStatus" class="select"><option value="draft">DRAFT (Reset ke Awal)</option><option value="locked">LOCKED (Kunci Nilai)</option><option value="sidang">SIDANG (Buka Koreksi)</option><option value="final">FINAL (Kunci Permanen)</option></select></div>
       ${cabang === 'LCP' ? '<div class="form-group"><label class="label">Tahap LCP (opsional)</label><select id="psTahap" class="select"><option value="">— tidak diubah —</option><option value="penyisihan">Penyisihan</option><option value="final">Final</option></select></div>' : ''}
@@ -1851,9 +1851,17 @@
     statusCab: d => statusCab(d.cab),
     statusGo: async (d, el) => {
       const st = val('psStatus');
-      if (st === 'draft' && !await confirmPromise('Reset ke DRAFT', `Semua state penilaian ${esc(d.cab)} akan dihapus. Yakin?`, 'Ya, Reset')) return;
+      if (st === 'draft' && !await confirmPromise('Reset ke DRAFT', `Keputusan seri${d.cab === 'LCP' ? ', finalis, dan tahap LCP' : ''} ${esc(d.cab)} akan direset. Nilai juri tetap tersimpan. Yakin?`, 'Ya, Reset')) return;
       guard(el, async () => {
-        const r = await api('admin_set_status', { cabang: d.cab, status: st, tahap: val('psTahap'), alasan: val('psAlasan') });
+        const kirim = paksa => api('admin_set_status', { cabang: d.cab, status: st, tahap: val('psTahap'), alasan: val('psAlasan'), paksa });
+        let r;
+        try { r = await kirim(false); }
+        catch (e) {
+          if (e.code !== 'perlu_paksa') throw e;
+          const ms = ((e.data && e.data.messages) || [e.message]).slice(0, 6).map(m => '• ' + esc(m)).join('<br>');
+          if (!await confirmPromise('Cabang belum layak FINAL', `${ms}<br><br>Tetap jadikan FINAL?`, 'Ya, paksa FINAL')) return;
+          r = await kirim(true);
+        }
         toast(r.message, 'success'); closeModal(); await loadAdminCabang();
       });
     },

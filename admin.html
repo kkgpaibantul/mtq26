@@ -213,6 +213,7 @@
             <button class="btn btn-success btn-sm" data-act="unduhExcel" title="Unduh daftar peserta per kapanewon (Excel) untuk mail merge surat undangan">📥 Unduh Excel Undangan</button>
             <button class="btn btn-success btn-sm" data-act="unduhCabang" title="Unduh Excel mail merge per mata lomba (1 baris per cabang, urut No. Undian)">📥 Excel per Cabang (Undian)</button>
             <button class="btn btn-ghost btn-sm" data-act="renameBerkas" title="Samakan nama file akta/berkas di Drive dengan nama pemiliknya (akta anggota LCP)">🗂 Rapikan Nama File Akta</button>
+            <button class="btn btn-ghost btn-sm" data-act="renameMp3" title="Beri awalan nomor undian pada nama file MP3 Menyanyi di Drive (mis. MNY-03_...)">🎵 Awalan Undian pada MP3</button>
             <button class="btn btn-ghost btn-sm" onclick="loadPeserta()">↺ Refresh</button>
           </span>
         </div>
@@ -1810,6 +1811,19 @@
           toast(`Merapikan… ${r.diproses}/${r.total}`, 'info');
         }
         showAlert('Selesai', `${ren} file diganti namanya, ${same} sudah sesuai (dari ${total} peserta LCP).` + (gagal.length ? `<br><br>Gagal (${gagal.length}): ${esc(gagal.slice(0, 15).join(', '))}${gagal.length > 15 ? '…' : ''}<br><small>Biasanya karena file sudah dihapus dari Drive.</small>` : ''));
+      });
+    },
+    renameMp3: async (d, el) => {
+      if (!await confirmPromise('Awalan Undian pada MP3', 'Ganti nama file MP3 Menyanyi di Google Drive menjadi berawalan nomor undian (contoh MNY-03_...). Isi file dan tautan tidak berubah; folder jadi terurut sesuai urutan tampil. Aman diulang (mis. setelah undian ulang). Lanjutkan?', 'Ya, Ganti Nama')) return;
+      guard(el, async () => {
+        let mulai = 0, ren = 0, same = 0, gagal = [], total = 0;
+        for (let i = 0; i < 200; i++) {
+          const r = await api('admin_rename_berkas', { cabang: 'Menyanyi', mulai }, { timeout: 60000 });
+          ren += r.renamed || 0; same += r.sudah_sesuai || 0; total = r.total; gagal = gagal.concat(r.gagal || []);
+          if (r.selesai) break;
+          mulai = r.berikut; toast(`Memproses… ${r.diproses}/${r.total}`, 'info');
+        }
+        showAlert('Selesai', `${ren} file diganti namanya, ${same} sudah sesuai (dari ${total} peserta Menyanyi).` + (gagal.length ? `<br><br>Gagal (${gagal.length}): ${esc(gagal.slice(0, 15).join(', '))}` : ''));
       });
     },
     ofNama: d => {

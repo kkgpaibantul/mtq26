@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0F9488" />
+<meta name="description" content="Cek hasil penilaian MTQ Pelajar SD Kabupaten Bantul 2026 dengan nomor urut tampil" />
+<title>Cek Hasil MTQ 2026 — Bantul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://script.google.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{--rose-deep:#3F1F2E;--rose:#8B4A66;--hijau:#0F9488;--hijau-deep:#0B7268;--hijau-soft:#E0F7F4;--gold:#E5A643;--gold-soft:#FEF4E2;--gold-deep:#8A5A06;
+--ink:#1A2332;--ink-soft:#52616E;--ink-muted:#94A0AC;--bg:#F4F7FA;--surface:#fff;--border:#E4E9EE;--danger:#DC2626;--danger-soft:#FEE2E2;--info-soft:#EEF2FF;
+--shadow:0 4px 12px -2px rgba(15,23,42,.08),0 2px 4px -2px rgba(15,23,42,.04);--shadow-lg:0 12px 32px -4px rgba(15,23,42,.12);--r:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+header.hero{background:linear-gradient(160deg,var(--rose-deep),#5b2d44 60%,var(--hijau-deep));color:#fff;padding:28px 0 64px}
+.kicker{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#f3d9a4;font-weight:700}
+h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.7rem,6vw,2.2rem);line-height:1.15;margin:6px 0 6px}
+.sub{font-size:.88rem;opacity:.85}
+main{margin-top:-44px;padding-bottom:40px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+label{display:block;font-size:.78rem;font-weight:700;color:var(--ink-soft);margin:0 0 6px}
+.row{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:520px){.row{grid-template-columns:1.6fr 1fr}}
+select,input{width:100%;font:inherit;font-size:1rem;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--ink);min-height:48px}
+select:focus,input:focus{outline:none;border-color:var(--hijau);box-shadow:0 0 0 3px rgba(15,148,136,.15)}
+.btn{width:100%;margin-top:16px;min-height:50px;border:0;border-radius:12px;background:var(--hijau);color:#fff;font:inherit;font-weight:800;font-size:1rem;cursor:pointer;transition:background .2s,transform .1s}
+.btn:hover{background:var(--hijau-deep)}.btn:active{transform:scale(.99)}.btn:disabled{opacity:.6;cursor:wait}
+.hint{font-size:.78rem;color:var(--ink-muted);margin-top:10px}
+#out{margin-top:16px}
+.msg{border-radius:var(--r);padding:16px 18px;display:flex;gap:12px;align-items:flex-start;font-size:.92rem}
+.msg .ic{font-size:1.4rem;line-height:1}
+.msg b{display:block;margin-bottom:2px}
+.msg.info{background:var(--info-soft);border:1px solid #c7d2fe}
+.msg.warn{background:var(--gold-soft);border:1px solid #f6d99b}
+.msg.err{background:var(--danger-soft);border:1px solid #fca5a5}
+.who{padding-bottom:14px;border-bottom:1px dashed var(--border);margin-bottom:14px}
+.who .no{display:inline-block;background:var(--hijau-soft);color:var(--hijau-deep);font-weight:800;font-size:.8rem;padding:3px 10px;border-radius:99px}
+.who h2{font-family:'Fraunces',serif;font-size:1.35rem;line-height:1.25;margin:8px 0 2px}
+.who p{font-size:.85rem;color:var(--ink-soft)}
+.cab{font-size:.8rem;font-weight:700;color:var(--rose);margin-top:6px}
+.medal{border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;background:#f1f5f9}
+.medal.j{background:linear-gradient(135deg,#fff3d1,#ffe29a);color:#6b4500}
+.medal .big{font-family:'Fraunces',serif;font-weight:900;font-size:1.7rem;line-height:1.1}
+.medal .small{font-size:.85rem;margin-top:4px}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.kpi>div{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+.kpi .v{font-family:'Fraunces',serif;font-weight:900;font-size:1.6rem;line-height:1.1;color:var(--hijau-deep)}
+.kpi .l{font-size:.72rem;color:var(--ink-soft);margin-top:2px;font-weight:600}
+h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:6px 0 10px}
+.krit{margin-bottom:12px}
+.krit .t{display:flex;justify-content:space-between;font-size:.88rem;font-weight:600;margin-bottom:4px;gap:8px}
+.krit .t span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:9px;background:#e7edf3;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--hijau),#34d3c2);border-radius:99px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+details{margin-top:14px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:.88rem;background:#f8fafc;list-style:none}
+summary::-webkit-details-marker{display:none}summary::after{content:'▾';float:right;color:var(--ink-muted)}
+details[open] summary::after{content:'▴'}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:right;border-top:1px solid var(--border);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+@media(max-width:480px){th,td{padding:9px 8px;font-size:.8rem}}th{background:#fff;color:var(--ink-soft);font-size:.74rem;text-transform:uppercase;letter-spacing:.04em}
+.foot{text-align:center;font-size:.78rem;color:var(--ink-muted);margin-top:20px;padding:0 8px}
+.note{font-size:.78rem;color:var(--ink-muted);margin-top:14px}
+.spin{width:22px;height:22px;border:3px solid #cfe9e6;border-top-color:var(--hijau);border-radius:50%;animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}.bar i{transition:none}}
+@media print{header.hero,form,.btn,.hint,.foot{display:none}main{margin:0}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="kicker" id="kicker">MTQ Pelajar SD · Kabupaten Bantul</div>
+  <h1>Cek Hasil Penilaian</h1>
+  <p class="sub" id="sub">Masukkan nomor urut tampil Anda setelah lomba selesai.</p>
+</div></header>
+
+<main class="wrap">
+  <form class="card" id="frm" autocomplete="off" novalidate>
+    <div class="row">
+      <div><label for="cab">Cabang Lomba</label><select id="cab" required><option value="">Memuat…</option></select></div>
+      <div><label for="no">Nomor Urut Tampil</label><input id="no" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="mis. 3" required /></div>
+    </div>
+    <button class="btn" id="btn" type="submit">Cek Hasil</button>
+    <p class="hint">Nomor urut tampil adalah nomor hasil undian yang Anda terima saat pengundian (contoh: MTQ-3 → pilih MTQ, isi 3).</p>
+  </form>
+  <div id="out" aria-live="polite"></div>
+  <p class="foot" id="foot">Hasil resmi mengikuti Berita Acara dewan juri.</p>
+</main>
+
+<script>
+'use strict';
+(() => {
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxK9HQwo5_qqME-Vus5JNbHMO3HaJRELMAhlVjsOfO65uKlh_MdjwaexaQyRIQ2FVQlQQ/exec';
+  const ORDER = ['MTQ','MTtQ','MHQ','Puitisasi','MAz','LPP','LCP','Lukis','Menyanyi'];
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = n => Number(n).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  let CAB = [], busy = false, seq = 0;
+
+  async function api(action, payload, timeout = 25000) {
+    const ctrl = new AbortController(); const tid = setTimeout(() => ctrl.abort(), timeout);
+    try {
+      const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, payload || {})), signal: ctrl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } finally { clearTimeout(tid); }
+  }
+
+  const box = (cls, ic, judul, isi) => `<div class="msg ${cls}"><span class="ic" aria-hidden="true">${ic}</span><div><b>${esc(judul)}</b>${esc(isi)}</div></div>`;
+
+  function who(p) {
+    return `<div class="who"><span class="no">${esc(p.No_Undian)}</span><h2>${esc(p.Nama)}</h2><p>${esc(p.Sekolah)} · Kapanewon ${esc(p.Kapanewon)}</p><div class="cab">${esc(p.Cabang)}</div></div>`;
+  }
+  function medal(h) {
+    if (h.peringkat) return `<div class="medal j"><div class="big">🏆 ${esc(h.peringkat)}</div><div class="small">Peringkat ${esc(h.rank)} dari ${esc(h.dari)} peserta</div></div>`;
+    return `<div class="medal"><div class="big" style="font-size:1.25rem">Peringkat ${esc(h.rank)}</div><div class="small">dari ${esc(h.dari)} peserta</div></div>`;
+  }
+
+  function renderNilai(r) {
+    const h = r.hasil;
+    const krit = h.kriteria.map(k => {
+      const pct = k.max ? Math.max(0, Math.min(100, k.rata / k.max * 100)) : 0;
+      return `<div class="krit"><div class="t"><span>${esc(k.label)}</span><span>${fmt(k.rata)} / ${fmt(k.max)}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+    }).join('');
+    const head = h.kriteria.map(k => `<th>${esc(k.label)}</th>`).join('');
+    const rows = h.per_juri.map(j => `<tr><td>Juri ${esc(j.juri)}</td>${j.K.map(v => `<td>${fmt(v)}</td>`).join('')}<td><b>${fmt(j.total)}</b></td></tr>`).join('');
+    return who(r.peserta) + medal(h) +
+      `<div class="kpi"><div><div class="v">${fmt(h.total)}</div><div class="l">Nilai Akhir (rata-rata juri)</div></div><div><div class="v">${esc(h.rank)}</div><div class="l">Peringkat</div></div></div>` +
+      `<h3>Rata-rata per kriteria</h3>${krit}` +
+      `<details><summary>Rincian nilai tiap juri</summary><div class="tw"><table><thead><tr><th>Juri</th>${head}<th>Total</th></tr></thead><tbody>${rows}</tbody></table></div></details>` +
+      `<p class="note">Nilai akhir adalah rata-rata total nilai seluruh juri.</p>`;
+  }
+
+  function renderLcp(r) {
+    const h = r.hasil;
+    const rows = h.rincian.map(x => `<tr><td>${esc(x.label)}</td><td>${fmt(x.benar)}</td><td>${fmt(x.salah)}</td><td><b>${fmt(x.skor)}</b></td></tr>`).join('');
+    const kpi = h.finalis
+      ? `<div class="kpi"><div><div class="v">${fmt(h.total)}</div><div class="l">Skor Final${h.bawa_penyisihan ? ' (+ penyisihan)' : ''}</div></div><div><div class="v">${esc(h.rank || '-')}</div><div class="l">Peringkat Final</div></div></div>`
+      : `<div class="kpi"><div><div class="v">${fmt(h.skor_penyisihan)}</div><div class="l">Skor Penyisihan</div></div><div><div class="v">${esc(h.rank || '-')}</div><div class="l">Peringkat Penyisihan</div></div></div>`;
+    const status = h.finalis ? medal(h) : !h.finalis_ditetapkan ? `<div class="medal"><div class="big" style="font-size:1.15rem">Hasil penyisihan</div><div class="small">Peringkat ${esc(h.rank || '-')} dari ${esc(h.dari)} tim</div></div>` : `<div class="medal"><div class="big" style="font-size:1.15rem">Tidak lolos ke babak final</div><div class="small">Peringkat penyisihan ${esc(h.rank || '-')} dari ${esc(h.dari)} tim. Terima kasih telah berpartisipasi!</div></div>`;
+    return who(r.peserta) + status + kpi +
+      `<h3>Rincian skor</h3><div class="tw" style="border:1px solid var(--border);border-radius:12px"><table><thead><tr><th>Babak</th><th>Benar</th><th>Salah</th><th>Skor</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function render(r) {
+    if (r.error) return box('err', '⚠️', r.error === 'not_found' ? 'Nomor tidak ditemukan' : 'Tidak dapat memproses', r.message || 'Coba lagi.');
+    if (!r.tersedia) return box(r.reason === 'not_published' ? 'info' : 'warn', r.reason === 'not_published' ? '🔒' : '⏳', r.peserta.No_Undian + ' · ' + r.peserta.Cabang, r.message);
+    if (r.tidak_ikut) return who(r.peserta) + box('warn', 'ℹ️', 'Informasi', r.message);
+    return r.tipe === 'lcp' ? renderLcp(r) : renderNilai(r);
+  }
+
+  async function cek(cabKey, nomor) {
+    const my = ++seq; busy = true; $('btn').disabled = true;
+    const c = CAB.find(x => x.key === cabKey);
+    $('out').innerHTML = `<div class="card"><div class="msg info" style="border:0;padding:0;background:none;align-items:center"><span class="spin"></span><div><b>Mencari hasil…</b>Pertama kali bisa memakan waktu beberapa detik.</div></div></div>`;
+    let html;
+    try {
+      const r = await api('publik_cek_hasil', { no_undian: c.kode + '-' + nomor });
+      html = render(r);
+      if (r.tersedia && !r.error) html = `<div class="card">${html}</div>`;
+    } catch (e) {
+      html = box('err', '📡', e && e.name === 'AbortError' ? 'Server lambat merespons' : 'Tidak bisa terhubung', 'Periksa koneksi internet lalu coba lagi.');
+    }
+    if (my !== seq) return;
+    $('out').innerHTML = html; busy = false; $('btn').disabled = false;
+    $('out').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  function isiCabang() {
+    const sel = $('cab'); const q = new URLSearchParams(location.search);
+    const list = CAB.slice().sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
+    sel.innerHTML = '<option value="">— Pilih cabang —</option>' + list.map(c => `<option value="${esc(c.key)}">${esc(c.label)}</option>`).join('');
+    const pc = q.get('c'), pn = q.get('n');
+    if (pc && CAB.some(c => c.key === pc)) sel.value = pc;
+    if (pn && /^\d{1,3}$/.test(pn)) $('no').value = pn;
+    if (sel.value && $('no').value) cek(sel.value, parseInt($('no').value, 10));
+  }
+
+  async function boot() {
+    $('frm').addEventListener('submit', e => {
+      e.preventDefault(); if (busy) return;
+      const k = $('cab').value, n = $('no').value.replace(/\D/g, '');
+      if (!k) { $('out').innerHTML = box('warn', '👆', 'Pilih cabang lomba', 'Pilih cabang lomba terlebih dahulu.'); $('cab').focus(); return; }
+      if (!n || parseInt(n, 10) < 1) { $('out').innerHTML = box('warn', '👆', 'Isi nomor urut tampil', 'Masukkan nomor urut tampil berupa angka.'); $('no').focus(); return; }
+      const nomor = parseInt(n, 10);
+      history.replaceState(null, '', `?c=${encodeURIComponent(k)}&n=${nomor}`);
+      cek(k, nomor);
+    });
+    $('no').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3); });
+    try {
+      const r = await api('config', null, 20000);
+      if (r.status === 'success') {
+        CAB = r.cabang; const c = r.config || {};
+        if (c.nama_acara) $('kicker').textContent = String(c.nama_acara).match(/Musabaqah[^,]*/i) ? 'MTQ Pelajar SD · Kabupaten Bantul 2026' : c.nama_acara;
+        isiCabang();
+        return;
+      }
+    } catch (e) { /* jatuh ke pesan di bawah */ }
+    $('cab').innerHTML = '<option value="">Gagal memuat — muat ulang halaman</option>';
+    $('out').innerHTML = box('err', '📡', 'Tidak bisa terhubung ke server', 'Periksa koneksi internet lalu muat ulang halaman.');
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

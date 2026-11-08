@@ -297,7 +297,7 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
 .modal-footer{padding:1rem 1.4rem;border-top:1px solid var(--border);
   display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap}
 
-/* MEDIA QUERIES (RESPONSIVE) */
+/* MEDIA QUERIES */
 @media (max-width: 1024px) {
   .content-inner { padding: 1.5rem 1.5rem; }
   .stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
@@ -307,7 +307,6 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
   .btn-hamburger { display: block; }
   .main-layout { flex-direction: column; }
   
-  /* Sembunyikan sidebar ke samping */
   .sidebar {
     position: absolute; top: 0; left: 0; height: 100%;
     transform: translateX(-100%);
@@ -315,7 +314,6 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
     width: 280px;
   }
   .sidebar.open { transform: translateX(0); }
-  
   .sidebar-overlay.show { display: block; opacity: 1; }
   
   .content-inner { padding: 1.2rem 1rem; }
@@ -348,6 +346,8 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
   .appbar-brand small { display: none; }
   .page-title { font-size: 1.3rem; }
   .login-card { padding: 1.8rem 1.5rem; }
+  .modal-footer { flex-direction: column-reverse; }
+  .modal-footer button { width: 100%; }
 }
 </style>
 </head>
@@ -540,7 +540,6 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
         </div>
       </div>
       <div class="appbar-actions">
-        <a href="#/input" class="btn btn-ghost btn-sm" style="display:none;" id="btnNavInputDesktop">📝 Input</a>
         <button class="btn btn-danger btn-sm" onclick="App.doLogout()">🚪 Logout</button>
       </div>
     </header>
@@ -740,7 +739,7 @@ const UI = (() => {
     if (e.target.id === 'uiModal') closeModal();
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-  return { toast, alert, confirm, prompt, closeModal };
+  return { toast, alert, confirm, prompt, closeModal, openModal };
 })();
 
 /* ═════════════════════════════════════════════════════════════════════════
@@ -1425,10 +1424,13 @@ const App = {
         }
       }
 
-      msg.textContent = res.message;
-      msg.className = 'msg ' + (res.duplicate ? 'msg-warn' : 'msg-success');
-
       if (res.success) {
+        // Hitung total untuk ditampilkan di modal
+        let subtotalKotor = 0;
+        payload.items.forEach(it => subtotalKotor += (it.qty * it.harga));
+        const totalNet = subtotalKotor - payload.items.reduce((s, it) => s + it.diskon, 0) - payload.diskonNota;
+
+        // 1. Bersihkan form di belakang layar
         $('formInput').reset();
         $('tanggalPengeluaran').value = todayISO();
         $('itemsWrap').innerHTML = '';
@@ -1438,6 +1440,41 @@ const App = {
         $('rabPicker').value = '';
         this.currentFile = null;
         this.updateTotalPreview();
+        msg.textContent = ''; msg.className = 'msg';
+
+        // 2. Tampilkan Modal Notifikasi Berhasil
+        const bodyModal = `
+          <div style="text-align:center; padding:.5rem 0;">
+            <div style="font-size:3.5rem; margin-bottom:1rem; line-height:1;">🎉</div>
+            <h2 style="color:var(--hijau); margin-bottom:.5rem; font-size:1.4rem;">Berhasil Disimpan!</h2>
+            <p style="color:var(--ink-light); font-size:.9rem; margin-bottom:1.5rem;">
+              Laporan pengeluaran <b>${esc(payload.pengeluaran)}</b><br>
+              sebesar <b>${formatRupiah(totalNet)}</b> telah berhasil dicatat ke sistem.
+            </p>
+          </div>
+        `;
+        
+        UI.openModal({
+          title: 'Sukses',
+          body: bodyModal,
+          buttons: [
+            { text: 'Tutup', cls: 'btn-ghost', action: () => UI.closeModal() },
+            { text: '➕ Laporkan Lainnya', cls: 'btn-success', action: () => {
+                UI.closeModal();
+                $('pengeluaran').focus();
+              }
+            }
+          ]
+        });
+
+      } else {
+        // Jika duplicate / error logic dari backend
+        msg.textContent = res.message;
+        msg.className = 'msg ' + (res.duplicate ? 'msg-warn' : 'msg-error');
+        // Jika duplicates, tetap tampilkan alert
+        if (res.duplicate) {
+          UI.alert('Perhatian', res.message);
+        }
       }
     } catch (err) {
       msg.textContent = '❌ ' + err.message;

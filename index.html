@@ -1490,12 +1490,13 @@
   const POLL_INTERVAL = 30000;              // 30 detik
   const API_TIMEOUT = 20000;                // 20 detik
 
-  const FALLBACK_TARGET = new Date('2026-11-11T00:00:00+07:00').getTime();
+  const FALLBACK_TARGET = new Date('2026-11-11T08:00:00+07:00').getTime();   // lomba dimulai 08.00 WIB
 
   const FALLBACK_CONFIG = {
     nama_acara: "Musabaqah Tilawatil Qur'an Pelajar Sekolah Dasar Tingkat Kabupaten Bantul Tahun 2026",
     tema: "Cinta di Hati, Ukir Prestasi, Wujudkan Generasi Qur'ani",
     tanggal_lomba: '2026-11-11',
+    jam_mulai: '08:00',
     tanggal_teks: 'Rabu, 11 November 2026',
     tempat_lomba: 'SD Muhammadiyah Karangbendo, Kapanewon Banguntapan',
     kuota_per_kapanewon: '11',
@@ -1654,7 +1655,8 @@
       STATE.cabang = data.cabang;
     }
     if (STATE.config.tanggal_lomba) {
-      const t = new Date(STATE.config.tanggal_lomba + 'T00:00:00+07:00').getTime();
+      const jam = /^\d{2}:\d{2}$/.test(String(STATE.config.jam_mulai || '')) ? STATE.config.jam_mulai : '08:00';
+      const t = new Date(STATE.config.tanggal_lomba + 'T' + jam + ':00+07:00').getTime();
       if (!isNaN(t)) STATE.countdownTarget = t;
     }
     /* Guard: activeTab harus valid */
@@ -1747,7 +1749,7 @@
     }
 
     const infoTanggal = $('#infoTanggal');
-    if (infoTanggal) infoTanggal.textContent = c.tanggal_teks || 'Rabu, 11 November 2026';
+    if (infoTanggal) infoTanggal.textContent = (c.tanggal_teks || 'Rabu, 11 November 2026') + (/^\d{2}:\d{2}$/.test(String(c.jam_mulai || '08:00')) ? ' · ' + String(c.jam_mulai || '08:00').replace(':', '.') + ' WIB' : '');
 
     const infoTempat = $('#infoTempat');
     if (infoTempat) {

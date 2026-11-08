@@ -1764,7 +1764,7 @@ const App = {
         <td style="text-align:center">${s.persen}%</td></tr>`;
     });
 
-    // ─── LAMPIRAN GRID (3 KOLOM) ───
+    // ─── LAMPIRAN GRID (2 KOLOM) ───
     let lampiran = '';
     const withFoto = r.rows.filter(d => d.fileIds && d.fileIds.length > 0);
     if (withFoto.length) {
@@ -1773,11 +1773,11 @@ const App = {
         // Render item + diskon
         const itemLines = (d.items || []).map(it => {
            const disk = it.diskon > 0 ? ` <span style="color:#c0392b; font-weight:bold;">(Diskon: -Rp ${it.diskon.toLocaleString('id-ID')})</span>` : '';
-           return `<div>• ${esc(it.nama)} (${it.qty} ${esc(it.satuan)}) @ Rp ${it.harga.toLocaleString('id-ID')}${disk}</div>`;
+           return `<div style="font-size:8pt;">• ${esc(it.nama)} (${it.qty} ${esc(it.satuan)}) @ Rp ${it.harga.toLocaleString('id-ID')}${disk}</div>`;
         }).join('');
         const total = d.besarPengeluaran.toLocaleString('id-ID');
 
-        // Render images (bisa lebih dari 1)
+        // Render images
         const imgsHtml = d.fileIds.map(fid => {
            const imgUrl = `https://drive.google.com/thumbnail?id=${fid}&sz=w1200`;
            return `<img src="${imgUrl}" class="lampiran-img" loading="eager">`;
@@ -1791,7 +1791,7 @@ const App = {
             <div class="lampiran-items">
               <strong>${esc(d.pengeluaran)}</strong><br>
               ${itemLines}
-              <div style="margin-top:4px; font-weight:bold; color:#27ae60;">Total: Rp ${total}</div>
+              <div style="margin-top:4px; font-weight:bold; color:#27ae60; font-size:9pt;">Total: Rp ${total}</div>
             </div>
             <div class="lampiran-images">${imgsHtml}</div>
           </div>
@@ -1823,20 +1823,25 @@ const App = {
       table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:4px}
       th,td{border:1px solid #888;padding:5px 6px;vertical-align:top}
       th{background:#e8e8e8;font-weight:bold;text-align:left}
+      
+      /* PERBAIKAN TABEL AGAR TIDAK TERPOTONG */
+      tr { page-break-inside: avoid; break-inside: avoid; }
+      thead { display: table-header-group; }
+      tfoot { display: table-row-group; }
+
       .group-row td{background:#F3D5E0;font-weight:bold;padding:6px 8px}
       .subtotal-row td{background:#f4f6f8}
       .grand-total td{background:#E8F6F4;font-weight:bold;font-size:10pt}
       
-      /* LAMPIRAN STYLE (3 KOLOM) */
+      /* LAMPIRAN STYLE (2 KOLOM) */
       .page-break{page-break-before:always}
-      .lampiran-container{display:flex;flex-direction:column;gap:15px}
-      .lampiran-card{border:1px solid #ccc;border-radius:6px;padding:12px;background:#fff;page-break-inside:avoid}
-      .lampiran-header{display:flex;justify-content:space-between;border-bottom:2px dashed #ccc;padding-bottom:8px;margin-bottom:8px;font-size:10pt;font-weight:bold;color:#333}
-      .lampiran-items{font-size:9pt;margin-bottom:10px; line-height: 1.4;}
+      .lampiran-container{display:grid; grid-template-columns: 1fr 1fr; gap:15px; align-items:start;}
+      .lampiran-card{border:1px solid #ccc;border-radius:6px;padding:10px;background:#fff;page-break-inside:avoid;break-inside:avoid;}
+      .lampiran-header{display:flex;justify-content:space-between;border-bottom:2px dashed #ccc;padding-bottom:5px;margin-bottom:8px;font-size:9pt;font-weight:bold;color:#333}
+      .lampiran-items{font-size:8.5pt;margin-bottom:8px; line-height: 1.3;}
       
-      /* Menggunakan Grid untuk 3 gambar berjejer */
-      .lampiran-images{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
-      .lampiran-img{width:100%;height:auto;max-height:300px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px}
+      .lampiran-images{display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:5px;}
+      .lampiran-img{width:100%;height:auto;max-height:250px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px;}
       
       .footer{margin-top:20px;font-size:8pt;color:#777;text-align:center}
       .print-bar{position:fixed;top:0;left:0;right:0;background:#4A2E3F;color:#fff;padding:10px 16px;

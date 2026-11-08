@@ -1828,6 +1828,8 @@ const App = {
     <tfoot>${footExtra}
       <tr class="grand-total"><td colspan="5" style="text-align:right">GRAND TOTAL</td>
       <td style="text-align:right">${formatRupiah(r.grandTotal)}</td></tr></tfoot></table>
+    
+    <div class="page-break"></div>
     <h2 class="section-title">RINGKASAN RAB vs REALISASI</h2>
     <table><thead><tr><th>Seksi</th><th style="width:130px">RAB</th>
       <th style="width:130px">Realisasi</th><th style="width:130px">Sisa</th>
@@ -1836,9 +1838,8 @@ const App = {
       <td style="text-align:right">${formatRupiah(r.totalRAB)}</td>
       <td style="text-align:right">${formatRupiah(r.totalRealisasi)}</td>
       <td style="text-align:right;color:${r.sisa < 0 ? '#c0392b' : '#27ae60'}">${formatRupiah(r.sisa)}</td>
-      <td></td></tr>
-      <tr><td colspan="4" style="text-align:right"><strong>Reimbursement Pending (Uang Sendiri)</strong></td>
-      <td colspan="2" style="text-align:right">${formatRupiah(r.pendingGanti)}</td></tr></tfoot></table>
+      <td></td></tr></tfoot></table>
+      
     ${lampiran}
     <p class="footer">Dicetak: ${esc(r.generatedAt)} | Total ${r.totalRows} item${r.fotoCount ? ' · ' + r.fotoCount + ' foto bukti' : ''}</p>
     <script>

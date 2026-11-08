@@ -207,9 +207,8 @@ a{color:inherit;text-decoration:none}
 .total-row.final strong{font-family:'Fraunces',serif;font-size:1.5rem;
   color:var(--hijau);font-weight:900}
 
-#previewWrap{margin-top:.7rem}
-#preview{max-width:200px;max-height:240px;border-radius:var(--r-md);
-  border:1px solid var(--border);object-fit:contain;background:var(--bg);padding:.3rem}
+#previewWrap{margin-top:.7rem; display:none; flex-wrap:wrap; gap:8px;}
+#previewWrap img{max-width:80px; max-height:80px; border-radius:6px; border:1px solid var(--border); object-fit:cover;}
 
 .msg{margin-top:.8rem;padding:.7rem 1rem;border-radius:var(--r-md);
   font-weight:600;font-size:.82rem;display:none;border:1px solid transparent;line-height:1.5}
@@ -483,10 +482,10 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
           </div>
 
           <div class="form-group" style="margin-top:1.2rem;">
-            <label class="label" for="fileFoto">Foto Bukti / Nota</label>
-            <input id="fileFoto" class="input" type="file" accept="image/*"
+            <label class="label" for="fileFoto">Foto Bukti / Nota (Bisa pilih banyak foto)</label>
+            <input id="fileFoto" class="input" type="file" accept="image/*" multiple
                    onchange="App.onFileInput(event)" style="padding:.5rem;">
-            <div id="previewWrap" style="display:none;"><img id="preview" alt="Preview"></div>
+            <div id="previewWrap"></div>
           </div>
 
           <button id="btnSubmit" type="submit" class="btn btn-success btn-block"
@@ -498,7 +497,7 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
 
     <footer class="app-footer">
       <span>© 2026 <b>KKG PAI Kabupaten Bantul</b></span>
-      <span>MTQ Pelajar SD 2026 · v16</span>
+      <span>MTQ Pelajar SD 2026 · v17</span>
     </footer>
   </div>
 </div>
@@ -635,7 +634,7 @@ table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid va
 
         <footer class="app-footer">
           <span>© 2026 <b>KKG PAI Kabupaten Bantul</b></span>
-          <span>MTQ Pelajar SD 2026 · v16</span>
+          <span>MTQ Pelajar SD 2026 · v17</span>
         </footer>
       </div>
     </div>
@@ -1038,7 +1037,8 @@ const App = {
   token: sessionStorage.getItem('mtq_token') || '',
   config: null,
   inputReady: false, adminReady: false,
-  currentPage: 1, currentFile: null,
+  currentPage: 1, 
+  _files: [],
   _pendingUpdate: false, _submitting: false,
   _vAt: 0, _vRes: false,
 
@@ -1357,25 +1357,36 @@ const App = {
   },
 
   async onFileInput(e) {
-    const f = e.target.files[0];
-    if (!f) return;
-    if (f.size > 8 * 1024 * 1024) {
-      UI.toast('Ukuran file maksimal 8 MB', 'error');
-      e.target.value = ''; this.currentFile = null;
-      return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    this._files = [];
+    const previewWrap = $('previewWrap');
+    previewWrap.innerHTML = '';
+    previewWrap.style.display = 'flex';
+
+    for (const f of files) {
+      if (f.size > 8 * 1024 * 1024) {
+        UI.toast('File ' + f.name + ' melebihi 8 MB', 'error');
+        continue;
+      }
+      try {
+        const compressed = await compressImage(f);
+        this._files.push(compressed);
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          previewWrap.appendChild(img);
+        };
+        reader.readAsDataURL(compressed);
+      } catch (_) {
+        UI.toast('Gagal kompres ' + f.name, 'error');
+      }
     }
-    this.currentFile = f;
-    try {
-      const compressed = await compressImage(f);
-      const reader = new FileReader();
-      reader.onload = ev => {
-        $('preview').src = ev.target.result;
-        $('previewWrap').style.display = 'block';
-      };
-      reader.readAsDataURL(compressed);
-    } catch (_) {
-      $('preview').src = URL.createObjectURL(f);
-      $('previewWrap').style.display = 'block';
+    
+    if (!this._files.length) {
+      previewWrap.style.display = 'none';
+      e.target.value = '';
     }
   },
 
@@ -1403,11 +1414,16 @@ const App = {
         diskonNota: Math.max(0, Number(val('diskonNota')) || 0)
       };
 
-      if (this.currentFile) {
-        const compressed = await compressImage(this.currentFile);
-        payload.fileBase64 = await toBase64(compressed);
-        payload.fileName = compressed.name;
-        payload.mimeType = compressed.type;
+      if (this._files && this._files.length > 0) {
+        payload.files = [];
+        for (const f of this._files) {
+          const b64 = await toBase64(f);
+          payload.files.push({
+            fileBase64: b64,
+            fileName: f.name,
+            mimeType: f.type
+          });
+        }
       }
 
       let res;
@@ -1436,9 +1452,10 @@ const App = {
         $('itemsWrap').innerHTML = '';
         this.addItemRow();
         $('previewWrap').style.display = 'none';
+        $('previewWrap').innerHTML = '';
         $('namaHint').textContent = '';
         $('rabPicker').value = '';
-        this.currentFile = null;
+        this._files = [];
         this.updateTotalPreview();
         msg.textContent = ''; msg.className = 'msg';
 
@@ -1449,7 +1466,7 @@ const App = {
             <h2 style="color:var(--hijau); margin-bottom:.5rem; font-size:1.4rem;">Berhasil Disimpan!</h2>
             <p style="color:var(--ink-light); font-size:.9rem; margin-bottom:1.5rem;">
               Laporan pengeluaran <b>${esc(payload.pengeluaran)}</b><br>
-              sebesar <b>${formatRupiah(totalNet)}</b> telah berhasil dicatat ke sistem.
+              sebesar <b>${formatRupiah(totalNet)}</b> telah berhasil dicatat.
             </p>
           </div>
         `;
@@ -1468,10 +1485,8 @@ const App = {
         });
 
       } else {
-        // Jika duplicate / error logic dari backend
         msg.textContent = res.message;
         msg.className = 'msg ' + (res.duplicate ? 'msg-warn' : 'msg-error');
-        // Jika duplicates, tetap tampilkan alert
         if (res.duplicate) {
           UI.alert('Perhatian', res.message);
         }
@@ -1619,16 +1634,17 @@ const App = {
       '<th>Sumber</th><th>Status</th><th>Foto</th></tr></thead><tbody>';
     r.rows.forEach((d, i) => {
       const bSumber = d.sumber === 'Uang Sendiri' ? 'badge-warn' : 'badge-ok';
-      const badgeItem = d.items?.length > 1 ? ` <span class="badge badge-info">${d.items.length} item</span>` : '';
+      const itemBadge = d.items?.length > 1 ? ` <span class="badge badge-info">${d.items.length} item</span>` : '';
+      const jmlFoto = d.fileIds && d.fileIds.length > 1 ? ` (${d.fileIds.length}x)` : '';
       const foto = d.urlFoto
-        ? `<a href="${safeUrl(d.urlFoto)}" target="_blank" rel="noopener noreferrer" style="color:var(--rose-primary);">👁️</a>`
+        ? `<a href="${safeUrl(d.urlFoto)}" target="_blank" rel="noopener noreferrer" style="color:var(--rose-primary);">👁️${jmlFoto}</a>`
         : '-';
       h += `<tr>
         <td>${offset + i + 1}</td>
         <td>${esc(d.tanggalPengeluaran)}</td>
         <td>${esc(d.namaPengirim || '-')}</td>
         <td>${esc(d.seksi)}</td>
-        <td>${esc(d.pengeluaran)}${badgeItem}</td>
+        <td>${esc(d.pengeluaran)}${itemBadge}</td>
         <td class="num">${formatRupiah(d.besarPengeluaran)}</td>
         <td><span class="badge ${bSumber}">${esc(d.sumber)}</span></td>
         <td>${esc(d.statusGanti)}</td>
@@ -1693,7 +1709,8 @@ const App = {
     if (!items.length) return esc(d.pengeluaran);
     const lines = items.map(it => {
       const qty = it.satuan ? `${it.qty} ${esc(it.satuan)}` : String(it.qty);
-      const disk = it.diskon > 0 ? ` <span style="color:#c0392b">−${formatRupiah(it.diskon)}</span>` : '';
+      // DISKON DITAMPILKAN DI SINI
+      const disk = it.diskon > 0 ? ` <span style="color:#c0392b; font-weight:bold;">(Diskon: −${formatRupiah(it.diskon)})</span>` : '';
       return `<div style="display:flex;justify-content:space-between;gap:8px;padding:1px 0">
         <span>• ${esc(it.nama)} <span style="color:#888">${qty}</span> @ ${formatRupiah(it.harga)}${disk}</span>
         <span style="white-space:nowrap;font-variant-numeric:tabular-nums">${formatRupiah(it.subtotal)}</span>
@@ -1747,29 +1764,42 @@ const App = {
         <td style="text-align:center">${s.persen}%</td></tr>`;
     });
 
-    // ─── LAMPIRAN GRID (BESAR) ───
+    // ─── LAMPIRAN GRID (MULTI FOTO) ───
     let lampiran = '';
-    const withFoto = r.rows.filter(d => d.urlFoto && d.fileId);
+    const withFoto = r.rows.filter(d => d.fileIds && d.fileIds.length > 0);
     if (withFoto.length) {
       const itemsHtml = withFoto.map((d, i) => {
-        // Gunakan URL thumbnail Google Drive agar dijamin muncul
-        const imgUrl = `https://drive.google.com/thumbnail?id=${d.fileId}&sz=w1000`;
-        const cap = this.renderItemsHtml(d) + (d.keperluan ? `<br><small style="color:#666">${esc(d.keperluan)}</small>` : '');
+        
+        // Render item + diskon
+        const itemLines = (d.items || []).map(it => {
+           const disk = it.diskon > 0 ? ` <span style="color:#c0392b; font-weight:bold;">(Diskon: -Rp ${it.diskon.toLocaleString('id-ID')})</span>` : '';
+           return `<div>• ${esc(it.nama)} (${it.qty} ${esc(it.satuan)}) @ Rp ${it.harga.toLocaleString('id-ID')}${disk}</div>`;
+        }).join('');
+        const total = d.besarPengeluaran.toLocaleString('id-ID');
+
+        // Render images (bisa lebih dari 1)
+        const imgsHtml = d.fileIds.map(fid => {
+           const imgUrl = `https://drive.google.com/thumbnail?id=${fid}&sz=w1200`;
+           return `<img src="${imgUrl}" class="lampiran-img" loading="eager">`;
+        }).join('');
+
         return `
-          <div class="lampiran-item">
+          <div class="lampiran-card">
             <div class="lampiran-header">
-              <span>#${i + 1}</span>
-              <span>${esc(d.tanggalPengeluaran)}</span>
-              <span>${esc(d.seksi)}</span>
+              <span>#${i + 1} · ${esc(d.tanggalPengeluaran)} · ${esc(d.seksi)}</span>
             </div>
-            <img src="${imgUrl}" class="lampiran-img" loading="eager">
-            <div class="lampiran-text">${cap}</div>
+            <div class="lampiran-items">
+              <strong>${esc(d.pengeluaran)}</strong><br>
+              ${itemLines}
+              <div style="margin-top:4px; font-weight:bold; color:#27ae60;">Total: Rp ${total}</div>
+            </div>
+            <div class="lampiran-images">${imgsHtml}</div>
           </div>
         `;
       }).join('');
       lampiran = `<div class="page-break"></div>
         <h2 class="section-title">LAMPIRAN — BUKTI NOTA / FOTO</h2>
-        <div class="lampiran-grid">${itemsHtml}</div>`;
+        <div class="lampiran-container">${itemsHtml}</div>`;
     }
 
     const footExtra = (r.totalDiskonItem > 0 || r.totalDiskonNota > 0)
@@ -1797,13 +1827,14 @@ const App = {
       .subtotal-row td{background:#f4f6f8}
       .grand-total td{background:#E8F6F4;font-weight:bold;font-size:10pt}
       
-      /* LAMPIRAN GRID STYLE */
+      /* LAMPIRAN STYLE */
       .page-break{page-break-before:always}
-      .lampiran-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(350px, 1fr));gap:15px;align-items:start;margin-top:10px}
-      .lampiran-item{border:1px solid #ccc;padding:10px;border-radius:6px;background:#fafafa;page-break-inside:avoid;break-inside:avoid}
-      .lampiran-header{display:flex;justify-content:space-between;font-size:9pt;font-weight:bold;border-bottom:1px dashed #ccc;padding-bottom:5px;margin-bottom:8px;color:#555}
-      .lampiran-img{width:100%;max-height:450px;object-fit:contain;display:block;margin:0 auto;border:1px solid #ddd;background:#fff}
-      .lampiran-text{margin-top:8px;font-size:9pt;line-height:1.3}
+      .lampiran-container{display:flex;flex-direction:column;gap:15px}
+      .lampiran-card{border:1px solid #ccc;border-radius:6px;padding:12px;background:#fff;page-break-inside:avoid}
+      .lampiran-header{display:flex;justify-content:space-between;border-bottom:2px dashed #ccc;padding-bottom:8px;margin-bottom:8px;font-size:10pt;font-weight:bold;color:#333}
+      .lampiran-items{font-size:9pt;margin-bottom:10px}
+      .lampiran-images{display:flex;flex-wrap:wrap;gap:10px}
+      .lampiran-img{flex:1 1 45%;max-width:100%;max-height:350px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px}
       
       .footer{margin-top:20px;font-size:8pt;color:#777;text-align:center}
       .print-bar{position:fixed;top:0;left:0;right:0;background:#4A2E3F;color:#fff;padding:10px 16px;
@@ -1811,7 +1842,7 @@ const App = {
       .print-bar button{background:#fff;color:#4A2E3F;border:0;padding:8px 16px;border-radius:6px;
         font-weight:700;cursor:pointer;margin-left:8px;font-size:13px}
       .print-bar button:hover{background:#F3D5E0}
-      @media print { .print-bar{display:none} body{padding:0} }
+      @media print { .print-bar{display:none} body{padding:0} .lampiran-img{flex:1 1 48%;} }
     </style></head><body>
     <div class="print-bar"><span style="font-weight:700">🖨️ Pratinjau Laporan</span>
     <div><button onclick="window.print()">🖨️ Print / Save as PDF</button>

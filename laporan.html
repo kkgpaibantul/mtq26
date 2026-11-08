@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#4A2E3F" />
+<title>MTQ 2026 — Sistem Pengeluaran</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --rose-deep:#4A2E3F; --rose-primary:#9E5F7B; --rose-light:#F3D5E0;
+  --hijau:#2A9D8F; --hijau-light:#E8F6F4; --gold:#E9C46A; --gold-light:#FEF5E7;
+  --ink:#1E293B; --ink-light:#64748B; --bg:#F8FAFC; --surface:#FFF;
+  --border:#E2E8F0; --danger:#E53E3E; --danger-light:#FFF5F5;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.07);
+  --shadow-lg:0 10px 25px -3px rgba(0,0,0,.1);
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --trans:all .2s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100dvh;font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Fraunces',Georgia,serif;line-height:1.2;color:var(--rose-deep)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--rose-light);outline-offset:2px;border-radius:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+  border-radius:50%;border-top-color:#fff;animation:spin .6s linear infinite}
+
+.view{display:none}
+.view.active{display:block}
+
+.app-shell{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.appbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+  gap:.8rem;z-index:50;box-shadow:var(--shadow-sm)}
+.appbar-brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.15rem;
+  color:var(--rose-deep);display:flex;align-items:center;gap:.5rem}
+.appbar-brand .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px var(--gold-light)}
+.appbar-brand small{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;
+  font-size:.7rem;color:var(--ink-light);text-transform:uppercase;letter-spacing:.06em}
+.appbar-actions{display:flex;gap:.5rem;align-items:center}
+.btn-hamburger{display:none;font-size:1.4rem;padding:.2rem .6rem;border-radius:6px;color:var(--ink);margin-right:.2rem}
+.btn-hamburger:hover{background:var(--bg)}
+
+.app-footer{flex-shrink:0;padding:.7rem 1.5rem;background:var(--surface);
+  border-top:1px solid var(--border);display:flex;justify-content:space-between;
+  align-items:center;font-size:.72rem;color:var(--ink-light);gap:.5rem;flex-wrap:wrap}
+.app-footer b{color:var(--rose-deep);font-weight:700}
+
+.content-scroll{flex:1;overflow-y:auto;padding:1.5rem 1rem 2rem;
+  display:flex;flex-direction:column;align-items:center}
+.main-layout{flex:1;display:flex;overflow:hidden;min-height:0;position:relative}
+
+/* SIDEBAR */
+.sidebar{flex-shrink:0;width:260px;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  overflow-y:auto;padding:.8rem 0;transition:var(--trans);z-index:100}
+.sidebar-nav{display:flex;flex-direction:column;padding:0 .5rem}
+.nav-item{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;
+  border-radius:var(--r-md);font-weight:600;font-size:.88rem;color:var(--ink);
+  cursor:pointer;transition:var(--trans);border-left:3px solid transparent;
+  text-align:left;width:100%}
+.nav-item:hover{background:var(--bg);color:var(--rose-primary)}
+.nav-item.active{background:var(--rose-light);color:var(--rose-deep);border-left-color:var(--rose-deep)}
+.nav-item .icon{font-size:1.05rem;width:22px;text-align:center}
+.sidebar-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.4);
+  z-index:90;opacity:0;transition:opacity .2s}
+
+/* CONTENT AREA */
+.content-area{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.content-inner{flex:1;overflow-y:auto;padding:1.5rem 2rem;width:100%}
+.panel{display:none;animation:fadeIn .25s ease;width:100%;max-width:1200px;margin:0 auto}
+.panel.active{display:block}
+
+.page-title{font-family:'Fraunces',serif;font-size:1.55rem;font-weight:700;
+  color:var(--rose-deep);margin-bottom:1.3rem;display:flex;
+  justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+
+/* LOGIN */
+#viewLogin{height:100dvh;display:none}
+#viewLogin.active{display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-card{background:var(--surface);border-radius:var(--r-lg);padding:2.5rem;
+  box-shadow:var(--shadow-lg);border:1px solid var(--border);width:100%;max-width:420px;
+  text-align:center;animation:fadeIn .3s ease}
+.login-icon{font-size:2.8rem;margin-bottom:.5rem}
+.login-card h1{font-size:1.6rem;margin-bottom:.3rem}
+.login-card>p{color:var(--ink-light);font-size:.88rem;margin-bottom:1.5rem}
+.login-card label{text-align:left}
+.login-card .btn{width:100%;margin-top:1rem;padding:.8rem;font-size:.95rem}
+.back-link{display:inline-block;margin-top:1rem;color:var(--rose-primary);
+  font-weight:600;font-size:.85rem}
+.back-link:hover{text-decoration:underline}
+
+/* COMPONENTS */
+.container{width:100%;max-width:720px}
+.card{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);padding:1.5rem;margin-bottom:1rem}
+.card h3{font-size:1.15rem;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem}
+
+.form-group{margin-bottom:1rem}
+.label-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  margin-bottom:.35rem;flex-wrap:wrap}
+.label{display:block;font-size:.72rem;font-weight:800;color:var(--ink-light);
+  text-transform:uppercase;letter-spacing:.05em}
+.label-badge{font-size:.65rem;font-weight:700;color:var(--rose-deep);
+  background:var(--rose-light);padding:.15rem .5rem;border-radius:99px;
+  text-transform:none;letter-spacing:0;display:none}
+.label-badge:not(:empty){display:inline-block}
+
+.input,.select,.textarea{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);
+  border-radius:var(--r-md);background:var(--surface);font-weight:500;color:var(--ink);
+  transition:var(--trans)}
+.textarea{resize:vertical;min-height:60px}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--rose-primary);
+  box-shadow:0 0 0 3px rgba(158,95,123,.15)}
+.input::placeholder{color:#A0AEC0;font-weight:400}
+
+.input-judul {
+  font-family: 'Fraunces', serif; font-size: 1.25rem !important;
+  font-weight: 700 !important; color: var(--rose-deep) !important;
+  padding: .8rem 1rem !important; background: #fdfafb !important;
+  border-color: #e6d5df !important;
+}
+.input-judul:focus { background: #fff !important; border-color: var(--rose-primary) !important; }
+
+.nama-hint{font-size:.75rem;margin-top:.35rem;min-height:1em;font-weight:500;
+  transition:var(--trans);line-height:1.3}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  padding:.65rem 1rem;border-radius:var(--r-md);font-size:.85rem;font-weight:700;
+  transition:var(--trans);border:1.5px solid transparent;cursor:pointer;white-space:nowrap}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--rose-deep);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--rose-primary)}
+.btn-success{background:var(--hijau);color:#fff}
+.btn-success:hover:not(:disabled){background:#217F74}
+.btn-warning{background:var(--gold);color:var(--rose-deep)}
+.btn-warning:hover:not(:disabled){background:#D9B45A}
+.btn-danger{background:var(--danger-light);color:var(--danger);border-color:#FEB2B2}
+.btn-danger:hover:not(:disabled){background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--ink)}
+.btn-ghost:hover:not(:disabled){border-color:var(--rose-primary);color:var(--rose-primary)}
+.btn-sm{padding:.4rem .8rem;font-size:.78rem;border-radius:var(--r-sm)}
+.btn-block{width:100%}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+
+/* ITEMS */
+.item-header,.item-row{display:grid;
+  grid-template-columns:minmax(110px,1fr) 55px 70px 100px 90px 36px;gap:6px}
+.item-header{font-size:.7rem;color:var(--ink-light);font-weight:800;
+  text-transform:uppercase;letter-spacing:.04em;padding:0 .6rem .4rem}
+#itemsWrap{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem}
+.item-row{align-items:center;background:var(--bg);padding:.5rem .6rem;
+  border-radius:var(--r-sm);border:1.5px solid var(--border);transition:var(--trans)}
+.item-row:focus-within{border-color:var(--rose-primary);background:#FDF7F9}
+.item-row input{padding:.45rem .55rem;font-size:.82rem;border-radius:6px;
+  border:1.5px solid var(--border);background:var(--surface);width:100%;font-weight:500}
+.item-row input:focus{outline:none;border-color:var(--rose-primary)}
+.item-row .item-qty,.item-row .item-harga,.item-row .item-diskon{
+  text-align:right;font-variant-numeric:tabular-nums}
+.item-row .btn-del{padding:.3rem;width:100%;height:32px;background:var(--danger-light);
+  color:var(--danger);border:1.5px solid #FEB2B2;border-radius:6px;
+  font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.item-row .btn-del:hover:not(:disabled){background:var(--danger);color:#fff}
+.item-row .btn-del:disabled{opacity:.3;cursor:not-allowed}
+.btn-add-item{width:100%;padding:.6rem 1rem;background:var(--rose-light);
+  color:var(--rose-deep);border:1.5px dashed var(--rose-primary);border-radius:var(--r-sm);
+  font-weight:700;font-size:.82rem;transition:var(--trans)}
+.btn-add-item:hover{background:#EBC4D3}
+
+/* RAB */
+.rab-picker-box{background:var(--hijau-light);border:1.5px solid #A8E6C0;
+  border-radius:var(--r-md);padding:.7rem .9rem;margin-bottom:.8rem}
+.rab-picker-box label{font-size:.72rem;font-weight:800;color:var(--hijau);
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;display:block}
+.rab-picker-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:stretch}
+.rab-picker-row select{flex:1;min-width:200px}
+.rab-picker-row .btn{flex-shrink:0}
+
+.diskon-nota-box{display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;
+  border-radius:var(--r-md);background:var(--gold-light);border:1px solid var(--gold);
+  margin-top:.8rem}
+.diskon-nota-box label{flex:1;font-weight:700;font-size:.8rem;color:#92400E;
+  margin:0;text-transform:none;letter-spacing:0}
+.diskon-nota-box input{width:150px;padding:.45rem .6rem;border:1.5px solid var(--gold);
+  border-radius:6px;text-align:right;font-variant-numeric:tabular-nums}
+
+.total-box{background:var(--hijau-light);border:1.5px solid #A8E6C0;border-radius:var(--r-md);
+  padding:.9rem 1rem;margin-top:.8rem;display:flex;flex-direction:column;gap:.4rem}
+.total-row{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:.82rem;color:#4A5568}
+.total-row strong{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:700}
+.total-row.diskon strong{color:var(--danger)}
+.total-row.final{border-top:1.5px dashed #A8E6C0;padding-top:.55rem;margin-top:.3rem}
+.total-row.final span{font-weight:800;font-size:.78rem;color:var(--hijau);
+  text-transform:uppercase;letter-spacing:.06em}
+.total-row.final strong{font-family:'Fraunces',serif;font-size:1.5rem;
+  color:var(--hijau);font-weight:900}
+
+#previewWrap{margin-top:.7rem}
+#preview{max-width:200px;max-height:240px;border-radius:var(--r-md);
+  border:1px solid var(--border);object-fit:contain;background:var(--bg);padding:.3rem}
+
+.msg{margin-top:.8rem;padding:.7rem 1rem;border-radius:var(--r-md);
+  font-weight:600;font-size:.82rem;display:none;border:1px solid transparent;line-height:1.5}
+.msg:not(:empty){display:block;animation:fadeIn .2s ease}
+.msg code{background:rgba(0,0,0,.08);padding:.1rem .4rem;border-radius:4px;
+  font-family:monospace;font-size:.85em}
+.msg-success{background:var(--hijau-light);color:var(--hijau);border-color:#A8E6C0}
+.msg-error{background:var(--danger-light);color:var(--danger);border-color:#FEB2B2}
+.msg-warn{background:var(--gold-light);color:#92400E;border-color:var(--gold)}
+.msg-info{background:var(--rose-light);color:var(--rose-deep);border-color:#EBC4D3}
+
+/* STATS & FILTER */
+.stats-grid{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:1.5rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:1.1rem 1.2rem;box-shadow:var(--shadow-sm);border-left:4px solid var(--rose-primary)}
+.stat-card .lbl{font-size:.72rem;font-weight:800;color:var(--ink-light);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem}
+.stat-card .val{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;
+  color:var(--rose-deep);line-height:1.1;font-variant-numeric:tabular-nums}
+.stat-card.green{border-left-color:var(--hijau)}.stat-card.green .val{color:var(--hijau)}
+.stat-card.red{border-left-color:var(--danger)}.stat-card.red .val{color:var(--danger)}
+.stat-card.orange{border-left-color:var(--gold)}.stat-card.orange .val{color:#92400E}
+
+.filter-grid{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.filter-grid label{margin:0 0 .3rem}
+.filter-grid input,.filter-grid select{padding:.5rem .7rem;font-size:.82rem}
+
+/* TABLE */
+.table-responsive{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface)}
+table.data{width:100%;border-collapse:collapse;font-size:.82rem;min-width:600px}
+table.data th{background:var(--bg);color:var(--ink-light);padding:.7rem .8rem;
+  text-align:left;font-weight:800;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.05em;border-bottom:2px solid var(--border);white-space:nowrap;
+  position:sticky;top:0;z-index:2}
+table.data td{padding:.7rem .8rem;border-bottom:1px solid var(--border);vertical-align:top}
+table.data tr:hover td{background:#F8FAFC}
+table.data td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.data tfoot td{font-weight:700;background:var(--bg);border-top:2px solid var(--border)}
+
+.badge{display:inline-flex;align-items:center;padding:.18rem .55rem;border-radius:99px;
+  font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.badge-ok{background:var(--hijau-light);color:var(--hijau)}
+.badge-warn{background:var(--gold-light);color:#92400E}
+.badge-info{background:var(--rose-light);color:var(--rose-deep)}
+
+.pager{display:flex;justify-content:center;align-items:center;gap:.5rem;margin-top:.8rem;
+  color:var(--ink-light);font-size:.8rem}
+.pager button{padding:.35rem .8rem;font-size:.78rem;background:var(--surface);
+  color:var(--rose-deep);border:1.5px solid var(--border);border-radius:var(--r-sm);
+  font-weight:700;transition:var(--trans)}
+.pager button:hover:not(:disabled){border-color:var(--rose-primary);color:var(--rose-primary)}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+
+.radio-group{display:flex;gap:1rem;flex-wrap:wrap;margin:.4rem 0 .8rem}
+.radio{display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;
+  border:1.5px solid var(--border);border-radius:var(--r-md);
+  font-weight:600;font-size:.82rem;cursor:pointer;transition:var(--trans)}
+.radio:hover{border-color:var(--rose-primary)}
+.radio:has(input:checked){background:var(--rose-light);border-color:var(--rose-primary);color:var(--rose-deep)}
+.radio input{width:auto;margin:0;cursor:pointer;accent-color:var(--rose-primary)}
+
+/* TOAST & MODAL */
+.toast-container{position:fixed;top:1rem;left:50%;transform:translateX(-50%);
+  z-index:9999;display:flex;flex-direction:column;gap:.4rem;pointer-events:none}
+.toast{background:var(--ink);color:#fff;padding:.65rem 1.2rem;border-radius:99px;
+  font-size:.82rem;font-weight:600;box-shadow:var(--shadow-lg);
+  animation:slideIn .25s ease;max-width:90vw;text-align:center}
+.toast.success{background:var(--hijau)}.toast.error{background:var(--danger)}
+.toast.warn{background:var(--gold);color:var(--rose-deep)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(30,41,59,.6);
+  backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;
+  justify-content:center;padding:1rem;opacity:0;transition:opacity .2s}
+.modal-overlay.show{display:flex;opacity:1}
+.modal-box{background:var(--surface);border-radius:var(--r-lg);width:100%;
+  max-width:440px;max-height:90vh;display:flex;flex-direction:column;
+  box-shadow:var(--shadow-lg);animation:fadeIn .25s ease}
+.modal-header{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{margin:0;font-size:1.1rem}
+.modal-close{font-size:1.4rem;line-height:1;color:var(--ink-light);padding:.2rem .5rem;
+  border-radius:6px;transition:var(--trans)}
+.modal-close:hover{color:var(--danger);background:var(--danger-light)}
+.modal-body{padding:1.3rem 1.4rem;overflow-y:auto;font-size:.9rem;line-height:1.6}
+.modal-footer{padding:1rem 1.4rem;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap}
+
+/* MEDIA QUERIES (RESPONSIVE) */
+@media (max-width: 1024px) {
+  .content-inner { padding: 1.5rem 1.5rem; }
+  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .btn-hamburger { display: block; }
+  .main-layout { flex-direction: column; }
+  
+  /* Sembunyikan sidebar ke samping */
+  .sidebar {
+    position: absolute; top: 0; left: 0; height: 100%;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 15px rgba(0,0,0,.1);
+    width: 280px;
+  }
+  .sidebar.open { transform: translateX(0); }
+  
+  .sidebar-overlay.show { display: block; opacity: 1; }
+  
+  .content-inner { padding: 1.2rem 1rem; }
+  .appbar { padding: .7rem 1rem; }
+  .appbar-brand { font-size: 1rem; }
+  
+  .item-header { display: none; }
+  .item-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "nama nama" "qty sat" "harga disk" "del del";
+    padding: .6rem; gap: 8px;
+  }
+  .item-row .item-nama { grid-area: nama; }
+  .item-row .item-qty { grid-area: qty; }
+  .item-row .item-satuan { grid-area: sat; }
+  .item-row .item-harga { grid-area: harga; }
+  .item-row .item-diskon { grid-area: disk; }
+  .item-row .btn-del { grid-area: del; width: 100%; height: auto; padding: .5rem; }
+  
+  .diskon-nota-box { flex-direction: column; align-items: stretch; gap: .5rem; }
+  .diskon-nota-box input { width: 100%; }
+  
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .stat-card { padding: .9rem; }
+  .stat-card .val { font-size: 1.3rem; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .appbar-brand small { display: none; }
+  .page-title { font-size: 1.3rem; }
+  .login-card { padding: 1.8rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="viewBoot" class="view active">
+  <div class="app-shell" style="align-items:center;justify-content:center;background:linear-gradient(135deg,var(--rose-deep),var(--rose-primary));">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;color:#fff;">
+      <div class="spinner" style="width:44px;height:44px;border-width:4px;"></div>
+      <p style="margin:0;font-size:.9rem;opacity:.85;font-weight:600;">Memuat…</p>
+    </div>
+  </div>
+</div>
+
+<div id="viewInput" class="view">
+  <div class="app-shell">
+    <header class="appbar">
+      <div class="appbar-brand">
+        <span class="dot"></span>
+        <div>MTQ 2026<br><small>Input Pengeluaran</small></div>
+      </div>
+      <div class="appbar-actions">
+        <a href="#/admin" class="btn btn-ghost btn-sm">🔐 Admin</a>
+      </div>
+    </header>
+
+    <div class="content-scroll">
+      <div class="container">
+        <form id="formInput" class="card" onsubmit="App.submitInput(event)">
+          
+          <div class="form-group">
+            <label class="label" for="pengeluaran">Judul Nota / Pengeluaran *</label>
+            <input id="pengeluaran" class="input input-judul" required placeholder="Contoh: Belanja ATK Sekretariat">
+          </div>
+
+          <div class="form-group" style="margin-top:1.2rem;">
+            <div class="label-row">
+              <label class="label" for="namaPengirim">Nama Pengirim *</label>
+              <span id="petugasCount" class="label-badge"></span>
+            </div>
+            <input id="namaPengirim" class="input" required
+                   list="petugasDatalist"
+                   autocomplete="off"
+                   placeholder="Ketik atau pilih dari daftar…"
+                   oninput="App.onNamaInput(this)">
+            <datalist id="petugasDatalist"></datalist>
+            <div id="namaHint" class="nama-hint"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="seksi">Seksi *</label>
+            <select id="seksi" class="select" required onchange="App.onSeksiChange()">
+              <option value="">Memuat…</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group">
+              <label class="label" for="tanggalPengeluaran">Tanggal *</label>
+              <input id="tanggalPengeluaran" class="input" type="date" required>
+            </div>
+            <div class="form-group">
+              <label class="label" for="sumber">Sumber Dana *</label>
+              <select id="sumber" class="select" required><option value="">Memuat…</option></select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:1.2rem;">
+            <div class="label-row">
+              <label class="label">Pilih dari RAB (opsional)</label>
+              <span id="rabCount" class="label-badge"></span>
+            </div>
+            <div class="rab-picker-box">
+              <div class="rab-picker-row">
+                <select id="rabPicker" class="select">
+                  <option value="">— Pilih item dari RAB —</option>
+                </select>
+                <button type="button" class="btn btn-success btn-sm" onclick="App.addFromRab()">
+                  + Tambah
+                </button>
+              </div>
+              <div style="font-size:.72rem;color:#2A9D8F;margin-top:.4rem;">
+                💡 RAB hanya template awal. Anda bebas mengedit nama barang, qty, satuan, dan harganya.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label">Daftar Barang *</label>
+            <div class="item-header">
+              <span>Nama Barang</span><span>Qty</span><span>Satuan</span>
+              <span>Harga</span><span>Diskon</span><span></span>
+            </div>
+            <div id="itemsWrap"></div>
+            <datalist id="barangList"></datalist>
+            <datalist id="satuanList">
+              <option value="pcs">
+              <option value="buah">
+              <option value="box">
+              <option value="rim">
+              <option value="pak">
+              <option value="lusin">
+              <option value="set">
+              <option value="kg">
+              <option value="gram">
+              <option value="liter">
+              <option value="meter">
+              <option value="lembar">
+              <option value="dus">
+              <option value="botol">
+              <option value="karung">
+              <option value="orang">
+              <option value="kali">
+              <option value="unit">
+            </datalist>
+            <button type="button" class="btn-add-item" onclick="App.addItemRow()">+ Tambah Barang Manual</button>
+          </div>
+
+          <div class="diskon-nota-box">
+            <label for="diskonNota">Diskon Nota (Rp)</label>
+            <input id="diskonNota" type="number" min="0" value="0" placeholder="0" inputmode="numeric" oninput="App.scheduleTotalUpdate()">
+          </div>
+          <div class="total-box">
+            <div class="total-row"><span>Subtotal kotor</span><strong id="subtotalKotor">Rp 0</strong></div>
+            <div class="total-row diskon"><span>Diskon item</span><strong id="totalDiskonItem">− Rp 0</strong></div>
+            <div class="total-row diskon"><span>Diskon nota</span><strong id="totalDiskonNota">− Rp 0</strong></div>
+            <div class="total-row final"><span>TOTAL</span><strong id="totalPreview">Rp 0</strong></div>
+          </div>
+
+          <div class="form-group" style="margin-top:1.2rem;">
+            <label class="label" for="keperluan">Keperluan / Keterangan Tambahan</label>
+            <textarea id="keperluan" class="textarea" rows="2" placeholder="Detail keperluan (opsional)"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top:1.2rem;">
+            <label class="label" for="fileFoto">Foto Bukti / Nota</label>
+            <input id="fileFoto" class="input" type="file" accept="image/*"
+                   onchange="App.onFileInput(event)" style="padding:.5rem;">
+            <div id="previewWrap" style="display:none;"><img id="preview" alt="Preview"></div>
+          </div>
+
+          <button id="btnSubmit" type="submit" class="btn btn-success btn-block"
+                  style="margin-top:1rem;padding:.8rem;">💾 Simpan Pengeluaran</button>
+          <div id="inputMsg" class="msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <span>© 2026 <b>KKG PAI Kabupaten Bantul</b></span>
+      <span>MTQ Pelajar SD 2026 · v16</span>
+    </footer>
+  </div>
+</div>
+
+<div id="viewLogin" class="view">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <h1>Admin Panel</h1>
+    <p>Masukkan password untuk melanjutkan</p>
+    <div class="form-group">
+      <label class="label" for="pwdInput">Password</label>
+      <input id="pwdInput" class="input" type="password" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')App.doLogin()"
+             style="text-align:center;font-weight:700;letter-spacing:.05em;">
+    </div>
+    <button id="btnLogin" class="btn btn-primary" onclick="App.doLogin()">Masuk</button>
+    <div id="loginMsg" class="msg"></div>
+    <a href="#/input" class="back-link">← Kembali ke Input</a>
+    <details class="login-hint">
+      <summary>Login gagal?</summary>
+      <ul>
+        <li>Pastikan sudah jalankan menu <b>⚙️ MTQ App → 🚀 Init System</b> di Google Sheet</li>
+        <li>Password default: <code>mtq2026</code></li>
+        <li>Jika sudah di-init tapi tetap gagal, cek URL deployment di browser lain</li>
+        <li>Coba refresh halaman jika sesi expired</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<div id="viewAdmin" class="view">
+  <div class="app-shell">
+    <header class="appbar">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <button class="btn-hamburger" onclick="App.toggleSidebar()">☰</button>
+        <div class="appbar-brand">
+          <span class="dot"></span>
+          <div>MTQ 2026<br><small>Admin Panel</small></div>
+        </div>
+      </div>
+      <div class="appbar-actions">
+        <a href="#/input" class="btn btn-ghost btn-sm" style="display:none;" id="btnNavInputDesktop">📝 Input</a>
+        <button class="btn btn-danger btn-sm" onclick="App.doLogout()">🚪 Logout</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <div class="sidebar-overlay" id="sidebarOverlay" onclick="App.toggleSidebar()"></div>
+      <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-section="dashboard" onclick="App.showAdminSection('dashboard')">
+            <span class="icon">📈</span> Dashboard
+          </button>
+          <button class="nav-item" data-section="data" onclick="App.showAdminSection('data')">
+            <span class="icon">📋</span> Data Pengeluaran
+          </button>
+          <button class="nav-item" data-section="download" onclick="App.showAdminSection('download')">
+            <span class="icon">📥</span> Unduh Laporan
+          </button>
+          <button class="nav-item" data-section="settings" onclick="App.showAdminSection('settings')">
+            <span class="icon">⚙️</span> Pengaturan
+          </button>
+          <div style="height:1px;background:var(--border);margin:.5rem 1rem;"></div>
+          <a href="#/input" class="nav-item" style="text-decoration:none;">
+            <span class="icon">📝</span> Ke Halaman Input
+          </a>
+        </nav>
+      </aside>
+
+      <div class="content-area">
+        <div class="content-inner">
+          <section id="admin-dashboard" class="panel active">
+            <div class="page-title">Dashboard</div>
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="card">
+              <h3>ℹ️ Info</h3>
+              <p style="color:var(--ink-light);font-size:.88rem;line-height:1.6;">
+                Ringkasan keuangan MTQ Pelajar SD Kabupaten Bantul 2026.
+                Gunakan menu di samping untuk melihat detail pengeluaran atau mengunduh laporan.
+              </p>
+            </div>
+          </section>
+
+          <section id="admin-data" class="panel">
+            <div class="page-title">Data Pengeluaran</div>
+            <div class="card">
+              <h3>🔍 Filter Data</h3>
+              <div class="filter-grid">
+                <div><label class="label" for="fSeksi">Seksi</label><select id="fSeksi" class="select" onchange="App.reload()"></select></div>
+                <div><label class="label" for="fSumber">Sumber</label><select id="fSumber" class="select" onchange="App.reload()"></select></div>
+                <div><label class="label" for="fStatus">Status Ganti</label><select id="fStatus" class="select" onchange="App.reload()"></select></div>
+                <div><label class="label" for="fNama">Nama Pengirim</label><input id="fNama" class="input" oninput="App.debouncedReload()" placeholder="Cari nama..."></div>
+                <div><label class="label" for="fDari">Dari Tanggal</label><input id="fDari" class="input" type="date" onchange="App.reload()"></div>
+                <div><label class="label" for="fSampai">Sampai Tanggal</label><input id="fSampai" class="input" type="date" onchange="App.reload()"></div>
+              </div>
+            </div>
+            <div class="card" style="padding-bottom:1rem;">
+              <h3>📋 Preview Data</h3>
+              <div id="tableWrap"><p style="color:var(--ink-light);font-style:italic;">⏳ Memuat...</p></div>
+            </div>
+          </section>
+
+          <section id="admin-download" class="panel">
+            <div class="page-title">Unduh Laporan</div>
+            <div class="card">
+              <h3>📄 Mode Laporan</h3>
+              <div class="radio-group">
+                <label class="radio"><input type="radio" name="mode" value="waktu" checked> Urut Waktu</label>
+                <label class="radio"><input type="radio" name="mode" value="seksi"> Per Seksi</label>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" onclick="App.downloadPdf(this)">📄 Unduh PDF (Print)</button>
+                <button class="btn btn-success" onclick="App.downloadZip(this)">🖼️ Unduh Foto (ZIP)</button>
+              </div>
+              <div id="dlMsg" class="msg"></div>
+              <p style="color:var(--ink-light);font-size:.8rem;margin-top:1rem;line-height:1.6;">
+                <b>PDF</b> akan membuka jendela pratinjau — klik <i>Print / Save as PDF</i>.
+                Lampiran foto bukti dengan keterangan otomatis disertakan.
+                <br><b>ZIP</b> mengunduh semua foto bukti (maks 40 MB).
+              </p>
+            </div>
+          </section>
+
+          <section id="admin-settings" class="panel">
+            <div class="page-title">Pengaturan</div>
+            <div class="card">
+              <h3>🔑 Ganti Password</h3>
+              <p style="color:var(--ink-light);font-size:.85rem;margin-bottom:1rem;">
+                Setelah ganti password, semua sesi login lama akan otomatis logout.
+              </p>
+              <button class="btn btn-ghost" onclick="App.changePwd()">🔑 Ganti Password</button>
+            </div>
+          </section>
+        </div>
+
+        <footer class="app-footer">
+          <span>© 2026 <b>KKG PAI Kabupaten Bantul</b></span>
+          <span>MTQ Pelajar SD 2026 · v16</span>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-overlay" id="uiModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="uiModalTitle">Judul</h3>
+      <button class="modal-close" onclick="UI.closeModal()" aria-label="Tutup">&times;</button>
+    </div>
+    <div class="modal-body" id="uiModalBody"></div>
+    <div class="modal-footer" id="uiModalFooter"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbx7xhamBx6zYPqKiyxQEFzjkXtqNgRL0OT_2UtmongjfvyJwmP8AkhuEI-byXlxU3JKfg/exec';
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * UI HELPERS
+ * ═════════════════════════════════════════════════════════════════════════ */
+const UI = (() => {
+  function toast(msg, type = 'info') {
+    const c = document.getElementById('toastContainer');
+    if (!c) return;
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.textContent = msg;
+    c.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); },
+      type === 'error' ? 4500 : 3000);
+  }
+  function openModal({ title, body, buttons, onOpen }) {
+    document.getElementById('uiModalTitle').textContent = title;
+    document.getElementById('uiModalBody').innerHTML = body;
+    const foot = document.getElementById('uiModalFooter');
+    foot.innerHTML = '';
+    (buttons || []).forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'btn ' + (b.cls || 'btn-primary');
+      btn.textContent = b.text;
+      btn.onclick = () => b.action();
+      foot.appendChild(btn);
+    });
+    document.getElementById('uiModal').classList.add('show');
+    if (onOpen) setTimeout(onOpen, 50);
+  }
+  function closeModal() { document.getElementById('uiModal').classList.remove('show'); }
+  function alert(title, msg, okText = 'OK') {
+    return new Promise(resolve => openModal({
+      title, body: `<div style="color:var(--ink)">${msg}</div>`,
+      buttons: [{ text: okText, cls: 'btn-primary', action: () => { closeModal(); resolve(); } }]
+    }));
+  }
+  function confirm(title, msg, okText = 'Ya', cancelText = 'Batal') {
+    return new Promise(resolve => openModal({
+      title, body: `<div style="color:var(--ink)">${msg}</div>`,
+      buttons: [
+        { text: cancelText, cls: 'btn-ghost', action: () => { closeModal(); resolve(false); } },
+        { text: okText, cls: 'btn-primary', action: () => { closeModal(); resolve(true); } }
+      ]
+    }));
+  }
+  function prompt({ title, label, type = 'text', placeholder = '', value = '',
+                   okText = 'OK', cancelText = 'Batal', validate }) {
+    return new Promise(resolve => {
+      const id = 'ui_prompt_' + Date.now();
+      const body = `<label class="label">${label}</label>
+        <input id="${id}" class="input" type="${type}" placeholder="${placeholder}" value="${esc(value)}">`;
+      const doOk = () => {
+        const el = document.getElementById(id);
+        const v = el ? el.value : '';
+        if (validate && !validate(v)) return;
+        closeModal(); resolve(v);
+      };
+      openModal({
+        title, body,
+        buttons: [
+          { text: cancelText, cls: 'btn-ghost', action: () => { closeModal(); resolve(null); } },
+          { text: okText, cls: 'btn-primary', action: doOk }
+        ],
+        onOpen: () => {
+          const inp = document.getElementById(id);
+          if (inp) {
+            inp.focus(); inp.select();
+            inp.addEventListener('keydown', e => {
+              if (e.key === 'Enter') { e.preventDefault(); doOk(); }
+              if (e.key === 'Escape') { closeModal(); resolve(null); }
+            });
+          }
+        }
+      });
+    });
+  }
+  document.getElementById('uiModal').addEventListener('click', e => {
+    if (e.target.id === 'uiModal') closeModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  return { toast, alert, confirm, prompt, closeModal };
+})();
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * UTILS
+ * ═════════════════════════════════════════════════════════════════════════ */
+const _fmtCache = new Map();
+const _fmtRp = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+function formatRupiah(n) {
+  n = Number(n) || 0;
+  const c = _fmtCache.get(n);
+  if (c !== undefined) return c;
+  const v = 'Rp ' + _fmtRp.format(n);
+  if (_fmtCache.size < 500) _fmtCache.set(n, v);
+  return v;
+}
+const _escMap = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => _escMap[c]);
+const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? esc(u) : '');
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID()
+  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    }));
+const debounce = (fn, ms = 300) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const $ = id => document.getElementById(id);
+const val = id => ($(id) ? String($(id).value).trim() : '');
+function todayISO() {
+  const d = new Date(); const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function setLoading(btn, on, text) {
+  if (!btn) return;
+  if (on) { btn._orig = btn.textContent; btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ' + (text || ''); }
+  else { btn.disabled = false; btn.innerHTML = text || btn._orig || 'OK'; }
+}
+function populateSelect(id, list, allLabel) {
+  const el = $(id); if (!el) return;
+  const frag = document.createDocumentFragment();
+  if (allLabel) {
+    const o = document.createElement('option');
+    o.value = 'Semua'; o.textContent = allLabel; frag.appendChild(o);
+  }
+  (list || []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s; frag.appendChild(o);
+  });
+  el.replaceChildren(frag);
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * SAFE DATALIST
+ * ═════════════════════════════════════════════════════════════════════════ */
+let _petugasCache = null;
+let _petugasDirty = false;
+let _petugasBlurBound = false;
+
+function populatePetugas(list) {
+  _petugasCache = Array.isArray(list) ? list : [];
+  const inp = $('namaPengirim');
+  const userIsTyping = inp && document.activeElement === inp && inp.value.trim() !== '';
+  if (userIsTyping) {
+    _petugasDirty = true;
+    _bindPetugasBlurOnce();
+    return;
+  }
+  _applyPetugasList(_petugasCache);
+}
+function _bindPetugasBlurOnce() {
+  if (_petugasBlurBound) return;
+  const inp = $('namaPengirim');
+  if (!inp) return;
+  _petugasBlurBound = true;
+  inp.addEventListener('blur', () => {
+    if (_petugasDirty && _petugasCache !== null) {
+      _petugasDirty = false;
+      setTimeout(() => _applyPetugasList(_petugasCache), 80);
+    }
+  });
+}
+function _applyPetugasList(list) {
+  const dl = $('petugasDatalist');
+  if (!dl) return;
+  const target = new Map();
+  (Array.isArray(list) ? list : []).forEach(item => {
+    const raw = (item && typeof item === 'object') ? item.nama : item;
+    const n = String(raw || '').trim();
+    if (!n) return;
+    const key = n.toLowerCase();
+    if (target.has(key)) return;
+    target.set(key, n);
+  });
+  const existing = new Map();
+  Array.from(dl.children).forEach(opt => {
+    existing.set(String(opt.value || '').toLowerCase(), opt);
+  });
+  for (const [key, opt] of existing) {
+    if (!target.has(key)) opt.remove();
+  }
+  for (const [key, nama] of target) {
+    if (!existing.has(key)) {
+      const opt = document.createElement('option');
+      opt.value = nama;
+      dl.appendChild(opt);
+    }
+  }
+  const sorted = Array.from(dl.children)
+    .sort((a, b) => String(a.value).localeCompare(String(b.value), 'id'));
+  sorted.forEach(opt => dl.appendChild(opt));
+  const badge = $('petugasCount');
+  if (badge) badge.textContent = target.size ? '👥 ' + target.size + ' petugas' : '';
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * RAB
+ * ═════════════════════════════════════════════════════════════════════════ */
+let _rabCache = [];
+let _rabDirty = false;
+let _rabBlurBound = false;
+
+function populateBarang(rabItems) {
+  _rabCache = Array.isArray(rabItems) ? rabItems : [];
+
+  const inp = document.activeElement;
+  const inItemsInput = inp && inp.closest && inp.closest('.item-row') && inp.classList.contains('item-nama');
+  if (inItemsInput && inp.value.trim() !== '') {
+    _rabDirty = true;
+    _bindRabBlurOnce();
+  } else {
+    _applyBarangList(_rabCache);
+  }
+
+  _applyRabPicker(_rabCache);
+
+  const badge = $('rabCount');
+  if (badge) badge.textContent = _rabCache.length ? '📋 ' + _rabCache.length + ' item RAB' : '';
+}
+
+function _bindRabBlurOnce() {
+  if (_rabBlurBound) return;
+  _rabBlurBound = true;
+  const wrap = document.getElementById('itemsWrap');
+  if (!wrap) return;
+  wrap.addEventListener('focusout', (e) => {
+    if (e.target.matches('.item-nama') && _rabDirty) {
+      _rabDirty = false;
+      setTimeout(() => _applyBarangList(_rabCache), 80);
+    }
+  }, true);
+}
+
+function _applyBarangList(items) {
+  const dl = $('barangList');
+  if (!dl) return;
+  const target = new Map();
+  items.forEach(item => {
+    const n = String(item.nama || '').trim();
+    if (!n) return;
+    const key = n.toLowerCase();
+    if (target.has(key)) return;
+    target.set(key, n);
+  });
+  const existing = new Map();
+  Array.from(dl.children).forEach(opt => {
+    existing.set(String(opt.value || '').toLowerCase(), opt);
+  });
+  for (const [key, opt] of existing) {
+    if (!target.has(key)) opt.remove();
+  }
+  for (const [key, nama] of target) {
+    if (!existing.has(key)) {
+      const opt = document.createElement('option');
+      opt.value = nama;
+      dl.appendChild(opt);
+    }
+  }
+  const sorted = Array.from(dl.children)
+    .sort((a, b) => String(a.value).localeCompare(String(b.value), 'id'));
+  sorted.forEach(opt => dl.appendChild(opt));
+}
+
+function _applyRabPicker(items) {
+  const sel = $('rabPicker');
+  if (!sel) return;
+  const currentVal = sel.value;
+
+  sel.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = items.length
+    ? '— Pilih item dari RAB —'
+    : '— Belum ada item RAB di sheet —';
+  sel.appendChild(placeholder);
+
+  if (!items.length) return;
+
+  const bySeksi = new Map();
+  items.forEach(item => {
+    const s = item.seksi || '(Lainnya)';
+    if (!bySeksi.has(s)) bySeksi.set(s, []);
+    bySeksi.get(s).push(item);
+  });
+
+  const sortedSeksi = Array.from(bySeksi.keys()).sort((a, b) => a.localeCompare(b, 'id'));
+  sortedSeksi.forEach(seksi => {
+    const group = document.createElement('optgroup');
+    group.label = seksi;
+    const list = bySeksi.get(seksi).sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
+    list.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify({
+        n: item.nama, s: item.seksi, v: item.volume, h: item.harga
+      });
+      opt.textContent = item.nama +
+        ' — ' + item.volume + ' × ' + formatRupiah(item.harga) +
+        ' = ' + formatRupiah(item.volume * item.harga);
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+  });
+
+  if (currentVal) {
+    try { sel.value = currentVal; } catch (_) {}
+  }
+}
+
+async function compressImage(file, maxDim = 1400, quality = 0.78) {
+  if (!file.type.startsWith('image/')) return file;
+  const img = await new Promise((res, rej) => {
+    const i = new Image(); i.onload = () => res(i); i.onerror = rej;
+    i.src = URL.createObjectURL(file);
+  });
+  let { width: w, height: h } = img;
+  const s = Math.min(1, maxDim / Math.max(w, h));
+  w = Math.round(w * s); h = Math.round(h * s);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').drawImage(img, 0, 0, w, h);
+  URL.revokeObjectURL(img.src);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', quality));
+  return new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' });
+}
+const toBase64 = f => new Promise((res, rej) => {
+  const r = new FileReader();
+  r.onload = e => res(e.target.result.split(',')[1]);
+  r.onerror = rej; r.readAsDataURL(f);
+});
+const isAuthError = e => {
+  const c = (e.code || '').toUpperCase();
+  const m = (e.message || '').toLowerCase();
+  return c === 'SESSION_EXPIRED' || c === 'NO_AUTH'
+      || m.includes('sesi') || m.includes('login') || m.includes('auth');
+};
+
+const CFG_CACHE = (() => {
+  const KEY = 'mtq_cfg_cache_v16';
+  const SOFT = 5 * 60 * 1000;
+  const HARD = 24 * 60 * 60 * 1000;
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      const { t, data } = JSON.parse(raw);
+      const age = Date.now() - t;
+      if (age > HARD) return null;
+      return { data, stale: age > SOFT };
+    } catch (_) { return null; }
+  }
+  function save(data) {
+    try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), data })); } catch (_) {}
+  }
+  function clear() { try { localStorage.removeItem(KEY); } catch (_) {} }
+  return { load, save, clear };
+})();
+
+const GAS = {
+  async call(action, body = {}) {
+    const url = GAS_URL + '?action=' + encodeURIComponent(action);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body),
+      redirect: 'follow', cache: 'no-store'
+    });
+    if (!res.ok) throw new Error('Server error (HTTP ' + res.status + ')');
+    const json = await res.json();
+    if (!json.ok) {
+      const e = new Error(json.error?.message || 'Unknown error');
+      e.code = json.error?.code;
+      throw e;
+    }
+    return json.data;
+  }
+};
+
+const App = {
+  token: sessionStorage.getItem('mtq_token') || '',
+  config: null,
+  inputReady: false, adminReady: false,
+  currentPage: 1, currentFile: null,
+  _pendingUpdate: false, _submitting: false,
+  _vAt: 0, _vRes: false,
+
+  show(name) {
+    ['Boot','Input','Login','Admin'].forEach(v => {
+      const el = $('view' + v);
+      if (el) el.classList.toggle('active', v === name);
+    });
+    window.scrollTo(0, 0);
+    if (name !== 'Admin') this.toggleSidebar(false);
+  },
+
+  route() {
+    const hash = location.hash.replace(/^#\/?/, '') || 'input';
+    if (hash === 'admin' || hash === 'login') {
+      if (this.token && this._vRes) {
+        this.show('Admin');
+        if (!this.adminReady) this.initAdmin();
+        else { this.loadStats(); this.reload(1); }
+        return;
+      }
+      if (this.token) {
+        this.show('Admin');
+        if (!this.adminReady) this.initAdmin();
+        this.validateToken().then(valid => { if (!valid) this.handleExpired(); });
+        return;
+      }
+      this.show('Login');
+      setTimeout(() => { $('pwdInput')?.focus(); }, 60);
+      return;
+    }
+    this.show('Input');
+    if (!this.inputReady) this.initInput();
+  },
+
+  toggleSidebar(force) {
+    const sidebar = $('sidebar');
+    const overlay = $('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+    const isOpen = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', isOpen);
+    overlay.classList.toggle('show', isOpen);
+  },
+
+  async validateToken() {
+    const now = Date.now();
+    if (this._vAt && (now - this._vAt) < 60000) return this._vRes;
+    try {
+      const s = await GAS.call('checkSession', { token: this.token });
+      this._vAt = now;
+      this._vRes = !!s.valid;
+      return this._vRes;
+    } catch (_) {
+      this._vAt = now; this._vRes = false;
+      return false;
+    }
+  },
+
+  async loadConfig() {
+    if (this.config) return this.config;
+    const cached = CFG_CACHE.load();
+    if (cached) {
+      this.config = cached.data;
+      if (cached.stale) this._refreshConfig();
+      return cached.data;
+    }
+    this.config = await GAS.call('config');
+    CFG_CACHE.save(this.config);
+    return this.config;
+  },
+
+  async _refreshConfig() {
+    try {
+      const fresh = await GAS.call('config');
+      this.config = fresh;
+      CFG_CACHE.save(fresh);
+      if (this.inputReady) {
+        populateSelect('seksi', fresh.seksiList);
+        populateSelect('sumber', fresh.sumberList);
+        populatePetugas(fresh.petugasList);
+        populateBarang(fresh.rabItems);
+      }
+      if (this.adminReady) {
+        populateSelect('fSeksi', fresh.seksiList, 'Semua');
+        populateSelect('fSumber', fresh.sumberList, 'Semua');
+        populateSelect('fStatus', fresh.statusList, 'Semua');
+      }
+    } catch (_) {}
+  },
+
+  async initInput() {
+    $('tanggalPengeluaran').value = todayISO();
+    if (!document.querySelector('#itemsWrap .item-row')) this.addItemRow();
+
+    try {
+      const cfg = await this.loadConfig();
+      populateSelect('seksi', cfg.seksiList);
+      populateSelect('sumber', cfg.sumberList);
+      populatePetugas(cfg.petugasList);
+      populateBarang(cfg.rabItems);
+      this.inputReady = true;
+    } catch (e) {
+      UI.toast('Gagal memuat konfigurasi: ' + e.message, 'error');
+      $('seksi').innerHTML = '<option value="">Error — refresh halaman</option>';
+      $('sumber').innerHTML = '<option value="">Error</option>';
+    }
+  },
+
+  onNamaInput(el) {
+    const hint = $('namaHint');
+    if (!hint) return;
+    const nama = String(el.value || '').trim();
+    if (!nama) { hint.textContent = ''; return; }
+    const list = Array.isArray(this.config?.petugasList) ? this.config.petugasList : [];
+    const namaLC = nama.toLowerCase();
+    const found = list.some(n => String(n).toLowerCase() === namaLC);
+    if (found) {
+      hint.textContent = '✓ Terdaftar di Sheet Petugas';
+      hint.style.color = 'var(--hijau)';
+      return;
+    }
+    const partial = list.some(n => String(n).toLowerCase().includes(namaLC));
+    if (partial) {
+      hint.textContent = '💡 Pilih nama dari saran di bawah';
+      hint.style.color = 'var(--rose-primary)';
+      return;
+    }
+    hint.textContent = '⚠️ Belum terdaftar (tetap boleh submit)';
+    hint.style.color = '#92400E';
+  },
+
+  onBarangInput(inputEl) {
+    const row = inputEl.closest('.item-row');
+    if (!row) return;
+    const nama = String(inputEl.value || '').trim();
+    if (!nama) return;
+
+    const list = Array.isArray(this.config?.rabItems) ? this.config.rabItems : [];
+    if (!list.length) return;
+    const namaLC = nama.toLowerCase();
+    const seksiNow = val('seksi');
+
+    let match = list.find(r => r.nama.toLowerCase() === namaLC && r.seksi === seksiNow);
+    if (!match) match = list.find(r => r.nama.toLowerCase() === namaLC);
+    if (!match) return;
+
+    const hargaEl = row.querySelector('.item-harga');
+    const qtyEl = row.querySelector('.item-qty');
+    const hargaNow = Number(hargaEl.value) || 0;
+    const qtyNow = Number(qtyEl.value) || 0;
+
+    if (hargaNow === 0) hargaEl.value = match.harga;
+    if (qtyNow <= 1) qtyEl.value = match.volume || 1;
+
+    const seksiSel = $('seksi');
+    if (seksiSel && !seksiSel.value && match.seksi) {
+      const opt = Array.from(seksiSel.options).find(o => o.value === match.seksi);
+      if (opt) seksiSel.value = match.seksi;
+    }
+
+    this.scheduleTotalUpdate();
+  },
+
+  onSeksiChange() {
+    // Optional hook
+  },
+
+  addFromRab() {
+    const sel = $('rabPicker');
+    if (!sel || !sel.value) {
+      UI.toast('Pilih item RAB terlebih dahulu', 'warn');
+      return;
+    }
+    let raw;
+    try { raw = JSON.parse(sel.value); } catch (_) { return; }
+    if (!raw || !raw.n) return;
+
+    const item = { nama: raw.n, seksi: raw.s, volume: raw.v, harga: raw.h };
+
+    const rows = document.querySelectorAll('#itemsWrap .item-row');
+    let targetRow = null;
+    for (const r of rows) {
+      const nama = r.querySelector('.item-nama').value.trim();
+      const harga = Number(r.querySelector('.item-harga').value) || 0;
+      if (!nama && harga === 0) { targetRow = r; break; }
+    }
+
+    if (targetRow) {
+      targetRow.querySelector('.item-nama').value = item.nama;
+      targetRow.querySelector('.item-qty').value = item.volume || 1;
+      targetRow.querySelector('.item-harga').value = item.harga || 0;
+      if (!targetRow.querySelector('.item-satuan').value) {
+        targetRow.querySelector('.item-satuan').value = 'pcs';
+      }
+    } else {
+      this.addItemRow({
+        nama: item.nama, qty: item.volume || 1, satuan: 'pcs', harga: item.harga || 0, diskon: 0
+      });
+    }
+
+    const seksiSel = $('seksi');
+    if (seksiSel && !seksiSel.value && item.seksi) {
+      const opt = Array.from(seksiSel.options).find(o => o.value === item.seksi);
+      if (opt) seksiSel.value = item.seksi;
+    }
+
+    sel.value = '';
+    this.scheduleTotalUpdate();
+    UI.toast('Item RAB ditambahkan: ' + item.nama, 'success');
+  },
+
+  async initAdmin() {
+    $('statsGrid').innerHTML =
+      '<div class="stat-card" style="grid-column:1/-1;text-align:center;padding:2rem;">' +
+      '<span class="spinner" style="border-color:var(--border);border-top-color:var(--rose-primary);"></span>' +
+      ' <span style="margin-left:.5rem;color:var(--ink-light)">Memuat dashboard…</span></div>';
+
+    try {
+      const cfg = await this.loadConfig();
+      populateSelect('fSeksi', cfg.seksiList, 'Semua');
+      populateSelect('fSumber', cfg.sumberList, 'Semua');
+      populateSelect('fStatus', cfg.statusList, 'Semua');
+      this.adminReady = true;
+      this.loadStats();
+      this.reload(1);
+    } catch (e) {
+      if (isAuthError(e)) return this.handleExpired();
+      $('statsGrid').innerHTML =
+        '<div class="stat-card red" style="grid-column:1/-1">' +
+        '<div class="lbl">⚠️ Gagal memuat dashboard</div>' +
+        '<div style="font-size:.85rem;margin-top:.5rem;color:var(--ink)">' + esc(e.message) + '</div>' +
+        '<button class="btn btn-sm btn-primary" style="margin-top:.8rem" onclick="App.retryInit()">🔄 Coba Lagi</button>' +
+        '</div>';
+    }
+  },
+
+  async retryInit() {
+    this.adminReady = false;
+    this.config = null;
+    CFG_CACHE.clear();
+    await this.initAdmin();
+  },
+
+  showAdminSection(section) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const target = $('admin-' + section);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.sidebar-nav .nav-item').forEach(n => {
+      n.classList.toggle('active', n.dataset.section === section);
+    });
+    if (window.innerWidth <= 768) this.toggleSidebar(false);
+  },
+
+  addItemRow(data = {}) {
+    const wrap = $('itemsWrap');
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML =
+      '<input class="item-nama" list="barangList" placeholder="Nama barang" value="' + esc(data.nama || '') + '">' +
+      '<input class="item-qty" type="number" min="1" value="' + (data.qty || 1) + '" placeholder="Qty" inputmode="numeric">' +
+      '<input class="item-satuan" list="satuanList" placeholder="pcs/lusin" value="' + esc(data.satuan || '') + '">' +
+      '<input class="item-harga" type="number" min="0" value="' + (data.harga || '') + '" placeholder="Harga" inputmode="numeric">' +
+      '<input class="item-diskon" type="number" min="0" value="' + (data.diskon || 0) + '" placeholder="Diskon" inputmode="numeric">' +
+      '<button type="button" class="btn-del" title="Hapus">🗑️</button>';
+    wrap.appendChild(row);
+    this.scheduleTotalUpdate();
+    return row;
+  },
+
+  removeItemRow(btn) {
+    const wrap = $('itemsWrap');
+    if (wrap.children.length <= 1) return;
+    btn.closest('.item-row').remove();
+    this.scheduleTotalUpdate();
+  },
+
+  collectItems() {
+    const rows = document.querySelectorAll('#itemsWrap .item-row');
+    const items = [];
+    for (const row of rows) {
+      const nama = row.querySelector('.item-nama').value.trim();
+      const qty = Math.max(1, Number(row.querySelector('.item-qty').value) || 1);
+      const satuan = row.querySelector('.item-satuan').value.trim() || 'pcs';
+      const harga = Math.max(0, Number(row.querySelector('.item-harga').value) || 0);
+      const diskonRaw = Math.max(0, Number(row.querySelector('.item-diskon').value) || 0);
+      if (!nama || harga <= 0) continue;
+      const diskon = Math.min(diskonRaw, qty * harga);
+      items.push({ nama, qty, satuan, harga, diskon, subtotal: Math.max(0, qty * harga - diskon) });
+    }
+    return items;
+  },
+
+  scheduleTotalUpdate() {
+    if (this._pendingUpdate) return;
+    if (!$('viewInput').classList.contains('active')) return;
+    this._pendingUpdate = true;
+    requestAnimationFrame(() => {
+      this._pendingUpdate = false;
+      this.updateTotalPreview();
+    });
+  },
+
+  updateTotalPreview() {
+    const items = this.collectItems();
+    let kotor = 0, dItem = 0;
+    items.forEach(it => { kotor += it.qty * it.harga; dItem += it.diskon; });
+    const dNota = Math.max(0, Number(val('diskonNota')) || 0);
+    const net = Math.max(0, kotor - dItem - dNota);
+    $('subtotalKotor').textContent = formatRupiah(kotor);
+    $('totalDiskonItem').textContent = '− ' + formatRupiah(dItem);
+    $('totalDiskonNota').textContent = '− ' + formatRupiah(dNota);
+    $('totalPreview').textContent = formatRupiah(net);
+    const rows = document.querySelectorAll('#itemsWrap .item-row');
+    const disable = rows.length <= 1;
+    rows.forEach(r => { r.querySelector('.btn-del').disabled = disable; });
+  },
+
+  async onFileInput(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) {
+      UI.toast('Ukuran file maksimal 8 MB', 'error');
+      e.target.value = ''; this.currentFile = null;
+      return;
+    }
+    this.currentFile = f;
+    try {
+      const compressed = await compressImage(f);
+      const reader = new FileReader();
+      reader.onload = ev => {
+        $('preview').src = ev.target.result;
+        $('previewWrap').style.display = 'block';
+      };
+      reader.readAsDataURL(compressed);
+    } catch (_) {
+      $('preview').src = URL.createObjectURL(f);
+      $('previewWrap').style.display = 'block';
+    }
+  },
+
+  async submitInput(e) {
+    e.preventDefault();
+    if (this._submitting) return;
+    this._submitting = true;
+    const btn = $('btnSubmit');
+    setLoading(btn, true, 'Menyimpan...');
+    const idem = uuid();
+    const msg = $('inputMsg');
+
+    try {
+      const items = this.collectItems();
+      if (!items.length) throw new Error('Minimal 1 barang dengan nama & harga > 0.');
+
+      const payload = {
+        namaPengirim: val('namaPengirim'),
+        seksi: val('seksi'),
+        pengeluaran: val('pengeluaran'),
+        keperluan: val('keperluan'),
+        tanggalPengeluaran: val('tanggalPengeluaran'),
+        sumber: val('sumber'),
+        items,
+        diskonNota: Math.max(0, Number(val('diskonNota')) || 0)
+      };
+
+      if (this.currentFile) {
+        const compressed = await compressImage(this.currentFile);
+        payload.fileBase64 = await toBase64(compressed);
+        payload.fileName = compressed.name;
+        payload.mimeType = compressed.type;
+      }
+
+      let res;
+      const MAX = 3;
+      for (let i = 0; i < MAX; i++) {
+        try { res = await GAS.call('save', { data: payload, idem }); break; }
+        catch (err) {
+          if (err.code === 'BUSY' && i < MAX - 1) {
+            setLoading(btn, true, `Antre... (${i + 1}/${MAX})`);
+            await new Promise(r => setTimeout(r, 800 * (i + 1)));
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      msg.textContent = res.message;
+      msg.className = 'msg ' + (res.duplicate ? 'msg-warn' : 'msg-success');
+
+      if (res.success) {
+        $('formInput').reset();
+        $('tanggalPengeluaran').value = todayISO();
+        $('itemsWrap').innerHTML = '';
+        this.addItemRow();
+        $('previewWrap').style.display = 'none';
+        $('namaHint').textContent = '';
+        $('rabPicker').value = '';
+        this.currentFile = null;
+        this.updateTotalPreview();
+      }
+    } catch (err) {
+      msg.textContent = '❌ ' + err.message;
+      msg.className = 'msg msg-error';
+    } finally {
+      this._submitting = false;
+      setLoading(btn, false, '💾 Simpan Pengeluaran');
+    }
+  },
+
+  async doLogin() {
+    const pwd = val('pwdInput');
+    const msg = $('loginMsg');
+    const btn = $('btnLogin');
+
+    if (!pwd) {
+      msg.textContent = 'Password wajib diisi.';
+      msg.className = 'msg msg-error';
+      $('pwdInput').focus();
+      return;
+    }
+
+    setLoading(btn, true, 'Memeriksa...');
+    msg.className = 'msg';
+    msg.textContent = '';
+
+    try {
+      const r = await GAS.call('login', { password: pwd });
+      this.token = r.token;
+      sessionStorage.setItem('mtq_token', this.token);
+      this._vAt = Date.now();
+      this._vRes = true;
+      this.adminReady = false;
+      $('pwdInput').value = '';
+
+      const targetHash = '#/admin';
+      if (location.hash === targetHash) this.route();
+      else location.hash = targetHash;
+    } catch (e) {
+      console.error('[login]', e);
+      let errorHtml;
+      if (e.code === 'AUTH_FAIL') {
+        errorHtml = '❌ <b>Password salah.</b><br>' +
+          '<small style="font-weight:500">Password default: <code>mtq2026</code>. ' +
+          'Jika sistem baru di-deploy, jalankan menu <b>⚙️ MTQ App → 🚀 Init System</b> di Google Sheet.</small>';
+      } else if (e.code === 'RATE_LIMIT') {
+        errorHtml = '⏳ ' + esc(e.message);
+      } else if (e.code === 'BUSY') {
+        errorHtml = '⏳ Server sedang sibuk. Tunggu beberapa detik lalu coba lagi.';
+      } else if (e.message && /HTTP \d+/.test(e.message)) {
+        errorHtml = '⚠️ Tidak dapat terhubung ke server.<br>' +
+          '<small style="font-weight:500">Periksa koneksi internet dan pastikan Web App sudah di-deploy dengan akses "Anyone".</small>';
+      } else if (e.message && /Failed to fetch|NetworkError/i.test(e.message)) {
+        errorHtml = '⚠️ Koneksi terputus. Periksa internet lalu coba lagi.';
+      } else {
+        errorHtml = '❌ ' + esc(e.message || 'Terjadi kesalahan tidak diketahui');
+      }
+      msg.innerHTML = errorHtml;
+      msg.className = 'msg msg-error';
+      $('pwdInput').focus();
+      $('pwdInput').select();
+    } finally {
+      setLoading(btn, false, 'Masuk');
+    }
+  },
+
+  async doLogout() {
+    try { await GAS.call('logout', { token: this.token }); } catch (_) {}
+    this.token = ''; sessionStorage.removeItem('mtq_token');
+    this.adminReady = false; this._vAt = 0; this._vRes = false;
+    location.hash = '#/input';
+  },
+
+  async handleExpired() {
+    this.token = ''; sessionStorage.removeItem('mtq_token');
+    this.adminReady = false; this._vAt = 0; this._vRes = false;
+    await UI.alert('⚠️ Sesi Habis', 'Sesi Anda telah berakhir. Silakan login ulang untuk melanjutkan.');
+    if (location.hash !== '#/login') location.hash = '#/login';
+    else this.route();
+  },
+
+  async changePwd() {
+    const oldPwd = await UI.prompt({
+      title: 'Password Lama', label: 'Masukkan password saat ini',
+      type: 'password', okText: 'Lanjutkan'
+    });
+    if (!oldPwd) return;
+
+    const newPwd = await UI.prompt({
+      title: 'Password Baru', label: 'Minimal 6 karakter',
+      type: 'password', okText: 'Simpan',
+      validate: v => {
+        if (!v || v.length < 6) { UI.toast('Password baru minimal 6 karakter', 'error'); return false; }
+        return true;
+      }
+    });
+    if (!newPwd) return;
+
+    try {
+      await GAS.call('changePassword', { token: this.token, oldPwd, newPwd });
+      await UI.alert('✅ Berhasil', 'Password berhasil diganti. Anda akan diarahkan ke halaman login.');
+      await this.doLogout();
+    } catch (e) {
+      if (isAuthError(e)) return this.handleExpired();
+      await UI.alert('❌ Gagal', esc(e.message));
+    }
+  },
+
+  getFilter() {
+    return {
+      seksi: val('fSeksi'), sumber: val('fSumber'), status: val('fStatus'),
+      nama: val('fNama'), tglDari: val('fDari'), tglSampai: val('fSampai')
+    };
+  },
+
+  async reload(page) {
+    this.currentPage = page || this.currentPage || 1;
+    const wrap = $('tableWrap');
+    wrap.innerHTML = '<p style="color:var(--ink-light);font-style:italic;">⏳ Memuat...</p>';
+    try {
+      const r = await GAS.call('query', {
+        token: this.token, filter: this.getFilter(),
+        page: { page: this.currentPage, pageSize: 50 }
+      });
+      this.renderTable(r);
+    } catch (e) {
+      if (isAuthError(e)) return this.handleExpired();
+      wrap.innerHTML = '<p style="color:var(--danger)">❌ ' + esc(e.message) + '</p>';
+    }
+  },
+
+  renderTable(r) {
+    const wrap = $('tableWrap');
+    if (!r.rows.length) {
+      wrap.innerHTML = '<p style="color:var(--ink-light);font-style:italic;">📭 Tidak ada data.</p>';
+      return;
+    }
+    const offset = (r.page - 1) * r.pageSize;
+    let h = '<div class="table-responsive"><table class="data"><thead><tr>' +
+      '<th>No</th><th>Tgl</th><th>Pengirim</th><th>Seksi</th>' +
+      '<th>Pengeluaran</th><th style="text-align:right">Jumlah</th>' +
+      '<th>Sumber</th><th>Status</th><th>Foto</th></tr></thead><tbody>';
+    r.rows.forEach((d, i) => {
+      const bSumber = d.sumber === 'Uang Sendiri' ? 'badge-warn' : 'badge-ok';
+      const badgeItem = d.items?.length > 1 ? ` <span class="badge badge-info">${d.items.length} item</span>` : '';
+      const foto = d.urlFoto
+        ? `<a href="${safeUrl(d.urlFoto)}" target="_blank" rel="noopener noreferrer" style="color:var(--rose-primary);">👁️</a>`
+        : '-';
+      h += `<tr>
+        <td>${offset + i + 1}</td>
+        <td>${esc(d.tanggalPengeluaran)}</td>
+        <td>${esc(d.namaPengirim || '-')}</td>
+        <td>${esc(d.seksi)}</td>
+        <td>${esc(d.pengeluaran)}${badgeItem}</td>
+        <td class="num">${formatRupiah(d.besarPengeluaran)}</td>
+        <td><span class="badge ${bSumber}">${esc(d.sumber)}</span></td>
+        <td>${esc(d.statusGanti)}</td>
+        <td>${foto}</td>
+      </tr>`;
+    });
+    h += `</tbody><tfoot><tr><td colspan="5" style="text-align:right">TOTAL (${r.total} item)</td>
+      <td class="num">${formatRupiah(r.grandTotal)}</td><td colspan="3"></td></tr></tfoot></table></div>`;
+    if (r.totalPages > 1) {
+      h += `<div class="pager">
+        <button onclick="App.reload(${r.page - 1})" ${r.page <= 1 ? 'disabled' : ''}>‹ Prev</button>
+        <span>Hal ${r.page} / ${r.totalPages}</span>
+        <button onclick="App.reload(${r.page + 1})" ${r.page >= r.totalPages ? 'disabled' : ''}>Next ›</button>
+      </div>`;
+    }
+    wrap.innerHTML = h;
+  },
+
+  async loadStats() {
+    try {
+      const s = await GAS.call('stats', { token: this.token });
+      const cls = s.sisa < 0 ? 'red' : 'green';
+      $('statsGrid').innerHTML =
+        `<div class="stat-card"><div class="lbl">Total RAB</div><div class="val">${formatRupiah(s.totalRAB)}</div></div>` +
+        `<div class="stat-card"><div class="lbl">Realisasi</div><div class="val">${formatRupiah(s.total)}</div></div>` +
+        `<div class="stat-card ${cls}"><div class="lbl">Sisa Anggaran</div><div class="val">${formatRupiah(s.sisa)}</div></div>` +
+        `<div class="stat-card orange"><div class="lbl">Pending Reimburse</div><div class="val">${formatRupiah(s.pending)}</div></div>`;
+    } catch (e) { if (isAuthError(e)) this.handleExpired(); }
+  },
+
+  async downloadPdf(btn) {
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    setLoading(btn, true, 'Menyiapkan...');
+    const msg = $('dlMsg');
+    msg.textContent = ''; msg.className = 'msg';
+    try {
+      const r = await GAS.call('report', { token: this.token, filter: this.getFilter(), opts: { mode } });
+      this.openPrintWindow(r);
+      const fotoInfo = r.fotoCount ? ` · ${r.fotoCount} foto bukti` : '';
+      msg.textContent = `✅ Pratinjau dibuka (${r.totalRows} baris${fotoInfo}, mode: ${r.mode}). Klik "Print / Save as PDF" di jendela pratinjau.`;
+      msg.className = 'msg msg-success';
+    } catch (e) {
+      if (isAuthError(e)) return this.handleExpired();
+      msg.textContent = '❌ ' + e.message;
+      msg.className = 'msg msg-error';
+    } finally { setLoading(btn, false, '📄 Unduh PDF (Print)'); }
+  },
+
+  async openPrintWindow(r) {
+    const html = this.buildPrintableHtml(r);
+    const w = window.open('', '_blank', 'width=1000,height=720');
+    if (!w) {
+      await UI.alert('Popup Diblokir',
+        'Browser memblokir jendela pratinjau. Izinkan popup untuk situs ini, lalu klik lagi tombol Unduh PDF.');
+      return;
+    }
+    w.document.open(); w.document.write(html); w.document.close();
+  },
+
+  renderItemsHtml(d) {
+    const items = d.items || [];
+    if (!items.length) return esc(d.pengeluaran);
+    const lines = items.map(it => {
+      const qty = it.satuan ? `${it.qty} ${esc(it.satuan)}` : String(it.qty);
+      const disk = it.diskon > 0 ? ` <span style="color:#c0392b">−${formatRupiah(it.diskon)}</span>` : '';
+      return `<div style="display:flex;justify-content:space-between;gap:8px;padding:1px 0">
+        <span>• ${esc(it.nama)} <span style="color:#888">${qty}</span> @ ${formatRupiah(it.harga)}${disk}</span>
+        <span style="white-space:nowrap;font-variant-numeric:tabular-nums">${formatRupiah(it.subtotal)}</span>
+      </div>`;
+    }).join('');
+    return `<strong>${esc(d.pengeluaran)}</strong><div style="margin-top:4px;font-size:8.5pt;color:#333">${lines}</div>`;
+  },
+
+  buildPrintableHtml(r) {
+    const filterInfo = [
+      r.filter.seksi && r.filter.seksi !== 'Semua' ? 'Seksi: ' + r.filter.seksi : '',
+      r.filter.sumber && r.filter.sumber !== 'Semua' ? 'Sumber: ' + r.filter.sumber : '',
+      r.filter.status && r.filter.status !== 'Semua' ? 'Status: ' + r.filter.status : '',
+      r.filter.tglDari ? 'Dari: ' + r.filter.tglDari : '',
+      r.filter.tglSampai ? 'Sampai: ' + r.filter.tglSampai : ''
+    ].filter(Boolean).join(' | ') || 'Semua data';
+    const isWaktu = r.mode === 'waktu';
+    const cols = isWaktu ? 8 : 7;
+    const cspan = isWaktu ? 5 : 4;
+    let body = '';
+    if (r.mode === 'seksi') {
+      const groups = {};
+      r.rows.forEach(d => { (groups[d.seksi] = groups[d.seksi] || []).push(d); });
+      Object.keys(groups).sort().forEach(seksi => {
+        const items = groups[seksi].sort((a, b) => (a.tanggalRaw || 0) - (b.tanggalRaw || 0));
+        const sub = items.reduce((s, d) => s + d.besarPengeluaran, 0);
+        body += `<tr class="group-row"><td colspan="${cols}"><strong>SEKSI: ${esc(seksi.toUpperCase())}</strong></td></tr>`;
+        items.forEach((d, i) => {
+          body += `<tr>
+            <td style="text-align:center">${i + 1}</td><td>${esc(d.tanggalPengeluaran)}</td>
+            <td>${this.renderItemsHtml(d)}</td><td>${esc(d.keperluan)}</td>
+            <td style="text-align:right">${formatRupiah(d.besarPengeluaran)}</td>
+            <td>${esc(d.sumber)}</td><td>${esc(d.statusGanti)}</td></tr>`;
+        });
+        body += `<tr class="subtotal-row"><td colspan="4" style="text-align:right"><em>Subtotal ${esc(seksi)}</em></td>
+          <td style="text-align:right"><strong>${formatRupiah(sub)}</strong></td><td colspan="2"></td></tr>`;
+      });
+    } else {
+      [...r.rows].sort((a, b) => (a.tanggalRaw || 0) - (b.tanggalRaw || 0)).forEach((d, i) => {
+        body += `<tr>
+          <td style="text-align:center">${i + 1}</td><td>${esc(d.tanggalPengeluaran)}</td>
+          <td>${esc(d.seksi)}</td><td>${this.renderItemsHtml(d)}</td><td>${esc(d.keperluan)}</td>
+          <td style="text-align:right">${formatRupiah(d.besarPengeluaran)}</td>
+          <td>${esc(d.sumber)}</td><td>${esc(d.statusGanti)}</td></tr>`;
+      });
+    }
+    let summary = '';
+    r.summary.forEach(s => {
+      const color = s.sisa < 0 ? '#c0392b' : '#27ae60';
+      summary += `<tr><td>${esc(s.seksi)}</td>
+        <td style="text-align:right">${formatRupiah(s.rab)}</td>
+        <td style="text-align:right">${formatRupiah(s.realisasi)}</td>
+        <td style="text-align:right;color:${color}">${formatRupiah(s.sisa)}</td>
+        <td style="text-align:center">${s.persen}%</td></tr>`;
+    });
+    let lampiran = '';
+    const withFoto = r.rows.filter(d => d.urlFoto);
+    if (withFoto.length) {
+      const rows = withFoto.map((d, i) => {
+        const cap = this.renderItemsHtml(d) + (d.keperluan ? `<br><small style="color:#666">${esc(d.keperluan)}</small>` : '');
+        return `<tr><td style="text-align:center">${i + 1}</td><td>${esc(d.tanggalPengeluaran)}</td>
+          <td>${esc(d.seksi)}</td><td>${cap}</td>
+          <td style="text-align:center"><img src="${safeUrl(d.urlFoto)}" style="max-width:180px;max-height:200px;border:1px solid #ddd" loading="eager"></td></tr>`;
+      }).join('');
+      lampiran = `<div class="page-break"></div><h2 class="section-title">LAMPIRAN — BUKTI NOTA / FOTO</h2>
+        <table class="lampiran-table"><thead><tr><th style="width:30px">No</th><th style="width:70px">Tgl</th>
+        <th style="width:120px">Seksi</th><th>Uraian & Keperluan</th><th style="width:200px">Foto</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+    }
+    const footExtra = (r.totalDiskonItem > 0 || r.totalDiskonNota > 0)
+      ? `<tr><td colspan="${cspan}" style="text-align:right">Subtotal Kotor</td>
+          <td style="text-align:right">${formatRupiah(r.totalKotor)}</td>
+          <td colspan="${cols - cspan - 1}"></td></tr>
+        <tr><td colspan="${cspan}" style="text-align:right;color:#c0392b">Diskon Item</td>
+          <td style="text-align:right;color:#c0392b">− ${formatRupiah(r.totalDiskonItem)}</td>
+          <td colspan="${cols - cspan - 1}"></td></tr>
+        <tr><td colspan="${cspan}" style="text-align:right;color:#c0392b">Diskon Nota</td>
+          <td style="text-align:right;color:#c0392b">− ${formatRupiah(r.totalDiskonNota)}</td>
+          <td colspan="${cols - cspan - 1}"></td></tr>` : '';
+    return `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8">
+    <title>Laporan MTQ 2026 — ${new Date().toISOString().slice(0, 10)}</title>
+    <style>
+      @page { size: A4 landscape; margin: 12mm; }
+      *{box-sizing:border-box}
+      body{font-family:-apple-system,"Segoe UI",Arial,sans-serif;font-size:10pt;color:#222;margin:0;padding:12px;padding-top:60px}
+      h1{text-align:center;margin:0 0 4px;font-size:16pt}
+      h2.sub{text-align:center;margin:0 0 4px;font-size:11pt;font-weight:normal}
+      p.meta{text-align:center;margin:0 0 14px;font-size:9pt;color:#555}
+      h2.section-title{font-size:12pt;margin:20px 0 8px;border-bottom:2px solid #333;padding-bottom:4px}
+      table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:4px}
+      th,td{border:1px solid #888;padding:5px 6px;vertical-align:top}
+      th{background:#e8e8e8;font-weight:bold;text-align:left}
+      .group-row td{background:#F3D5E0;font-weight:bold;padding:6px 8px}
+      .subtotal-row td{background:#f4f6f8}
+      .grand-total td{background:#E8F6F4;font-weight:bold;font-size:10pt}
+      .page-break{page-break-before:always}
+      .lampiran-table img{display:block}
+      .lampiran-table tr{page-break-inside:avoid}
+      .footer{margin-top:20px;font-size:8pt;color:#777;text-align:center}
+      .print-bar{position:fixed;top:0;left:0;right:0;background:#4A2E3F;color:#fff;padding:10px 16px;
+        display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:9999}
+      .print-bar button{background:#fff;color:#4A2E3F;border:0;padding:8px 16px;border-radius:6px;
+        font-weight:700;cursor:pointer;margin-left:8px;font-size:13px}
+      .print-bar button:hover{background:#F3D5E0}
+      @media print { .print-bar{display:none} body{padding:0} }
+    </style></head><body>
+    <div class="print-bar"><span style="font-weight:700">🖨️ Pratinjau Laporan</span>
+    <div><button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button onclick="window.close()">✖ Tutup</button></div></div>
+    <h1>LAPORAN PENGELUARAN</h1>
+    <h2 class="sub">MTQ Pelajar SD Tingkat Kabupaten Bantul Tahun 2026</h2>
+    <p class="meta">${esc(filterInfo)} | Mode: ${isWaktu ? 'Urut Waktu' : 'Per Seksi'}</p>
+    <table><thead><tr>
+      <th style="width:30px">No</th><th style="width:80px">Tgl</th>
+      ${isWaktu ? '<th style="width:130px">Seksi</th>' : ''}
+      <th>Pengeluaran / Rincian</th><th>Keperluan</th>
+      <th style="width:110px">Jumlah</th><th style="width:100px">Sumber</th>
+      <th style="width:90px">Status</th></tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot>${footExtra}
+      <tr class="grand-total"><td colspan="${cspan}" style="text-align:right">GRAND TOTAL</td>
+      <td style="text-align:right">${formatRupiah(r.grandTotal)}</td>
+      <td colspan="${cols - cspan - 1}"></td></tr></tfoot></table>
+    <h2 class="section-title">RINGKASAN RAB vs REALISASI</h2>
+    <table><thead><tr><th>Seksi</th><th style="width:130px">RAB</th>
+      <th style="width:130px">Realisasi</th><th style="width:130px">Sisa</th>
+      <th style="width:60px">%</th></tr></thead><tbody>${summary}</tbody>
+    <tfoot><tr class="grand-total"><td>TOTAL</td>
+      <td style="text-align:right">${formatRupiah(r.totalRAB)}</td>
+      <td style="text-align:right">${formatRupiah(r.totalRealisasi)}</td>
+      <td style="text-align:right;color:${r.sisa < 0 ? '#c0392b' : '#27ae60'}">${formatRupiah(r.sisa)}</td>
+      <td></td></tr>
+      <tr><td colspan="4" style="text-align:right"><strong>Reimbursement Pending (Uang Sendiri)</strong></td>
+      <td colspan="2" style="text-align:right">${formatRupiah(r.pendingGanti)}</td></tr></tfoot></table>
+    ${lampiran}
+    <p class="footer">Dicetak: ${esc(r.generatedAt)} | Total ${r.totalRows} item${r.fotoCount ? ' · ' + r.fotoCount + ' foto bukti' : ''}</p>
+    <script>
+      (function(){
+        var imgs=document.images,total=imgs.length,loaded=0,printed=false;
+        function tryPrint(){if(printed)return;if(loaded>=total){printed=true;
+          setTimeout(function(){try{window.print()}catch(e){}},250);}}
+        for(var i=0;i<total;i++){
+          if(imgs[i].complete)loaded++;
+          else{
+            imgs[i].addEventListener('load',function(){loaded++;tryPrint()});
+            imgs[i].addEventListener('error',function(){loaded++;tryPrint()});
+          }
+        }
+        tryPrint();
+        setTimeout(function(){if(!printed){printed=true;try{window.print()}catch(e){}}},6000);
+      })();
+    <\/script>
+    </body></html>`;
+  },
+
+  async downloadZip(btn) {
+    setLoading(btn, true, 'Membuat ZIP...');
+    const msg = $('dlMsg');
+    msg.textContent = ''; msg.className = 'msg';
+    try {
+      const r = await GAS.call('zip', { token: this.token, filter: this.getFilter() });
+      window.open(r.downloadUrl, '_blank');
+      msg.textContent = '✅ ZIP foto siap diunduh (' + (r.count || 0) + ' foto).';
+      msg.className = 'msg msg-success';
+    } catch (e) {
+      if (isAuthError(e)) return this.handleExpired();
+      msg.textContent = '❌ ' + e.message;
+      msg.className = 'msg msg-error';
+    } finally { setLoading(btn, false, '🖼️ Unduh Foto (ZIP)'); }
+  }
+};
+
+App.debouncedReload = debounce(() => App.reload(1), 300);
+
+/* ── Event delegation: item rows ── */
+$('itemsWrap').addEventListener('input', e => {
+  if (e.target.matches('.item-nama')) App.onBarangInput(e.target);
+  if (e.target.matches('input')) App.scheduleTotalUpdate();
+});
+$('itemsWrap').addEventListener('change', e => {
+  if (e.target.matches('.item-nama')) App.onBarangInput(e.target);
+});
+$('itemsWrap').addEventListener('click', e => {
+  const b = e.target.closest('.btn-del');
+  if (b) App.removeItemRow(b);
+});
+
+/* ── Handle resize: Sembunyikan sidebar overlay di desktop ── */
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) App.toggleSidebar(false);
+});
+
+/* ── Boot ── */
+window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('hashchange', () => App.route());
+  App.route();
+});
+window.addEventListener('pageshow', e => { if (e.persisted) App.route(); });
+</script>
+</body>
+</html>

@@ -1764,7 +1764,7 @@ const App = {
         <td style="text-align:center">${s.persen}%</td></tr>`;
     });
 
-    // ─── LAMPIRAN GRID (MULTI FOTO) ───
+    // ─── LAMPIRAN GRID (3 KOLOM) ───
     let lampiran = '';
     const withFoto = r.rows.filter(d => d.fileIds && d.fileIds.length > 0);
     if (withFoto.length) {
@@ -1827,14 +1827,16 @@ const App = {
       .subtotal-row td{background:#f4f6f8}
       .grand-total td{background:#E8F6F4;font-weight:bold;font-size:10pt}
       
-      /* LAMPIRAN STYLE */
+      /* LAMPIRAN STYLE (3 KOLOM) */
       .page-break{page-break-before:always}
       .lampiran-container{display:flex;flex-direction:column;gap:15px}
       .lampiran-card{border:1px solid #ccc;border-radius:6px;padding:12px;background:#fff;page-break-inside:avoid}
       .lampiran-header{display:flex;justify-content:space-between;border-bottom:2px dashed #ccc;padding-bottom:8px;margin-bottom:8px;font-size:10pt;font-weight:bold;color:#333}
-      .lampiran-items{font-size:9pt;margin-bottom:10px}
-      .lampiran-images{display:flex;flex-wrap:wrap;gap:10px}
-      .lampiran-img{flex:1 1 45%;max-width:100%;max-height:350px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px}
+      .lampiran-items{font-size:9pt;margin-bottom:10px; line-height: 1.4;}
+      
+      /* Menggunakan Grid untuk 3 gambar berjejer */
+      .lampiran-images{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;}
+      .lampiran-img{width:100%;height:auto;max-height:300px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px}
       
       .footer{margin-top:20px;font-size:8pt;color:#777;text-align:center}
       .print-bar{position:fixed;top:0;left:0;right:0;background:#4A2E3F;color:#fff;padding:10px 16px;
@@ -1842,7 +1844,7 @@ const App = {
       .print-bar button{background:#fff;color:#4A2E3F;border:0;padding:8px 16px;border-radius:6px;
         font-weight:700;cursor:pointer;margin-left:8px;font-size:13px}
       .print-bar button:hover{background:#F3D5E0}
-      @media print { .print-bar{display:none} body{padding:0} .lampiran-img{flex:1 1 48%;} }
+      @media print { .print-bar{display:none} body{padding:0} }
     </style></head><body>
     <div class="print-bar"><span style="font-weight:700">🖨️ Pratinjau Laporan</span>
     <div><button onclick="window.print()">🖨️ Print / Save as PDF</button>

@@ -1698,10 +1698,11 @@
     'template_surat_id', 'template_piagam_id', 'ttd_ketua_panitia_url', 'ttd_ketua_kkg_url', 'nomor_surat_terakhir']);
   const CFG_BOOL = new Set(['pendaftaran_buka', 'penilaian_buka', 'hasil_publikasi_buka', 'wajib_akta', 'wajib_sekolah_terdaftar', 'tiebreak_kriteria', 'lcp_bawa_penyisihan', 'seri_keputusan_manual']);
   const CFG_NUM = { kuota_per_kapanewon: [1, 99], min_juri: [1, 7], penalti_terlambat: [0, 100], maks_peringatan: [0, 10], lcp_salah_lempar: [-1000, 0], lcp_salah_rebutan: [-1000, 0] };
-  const CFG_LABEL = { seri_keputusan_manual: 'Seri diputuskan manual oleh juri', hasil_publikasi_buka: 'Publikasikan hasil', penilaian_buka: 'Penilaian dibuka', pendaftaran_buka: 'Pendaftaran dibuka' };
+  const CFG_LABEL = { jam_mulai: 'Jam mulai lomba (WIB) — target hitung mundur', seri_keputusan_manual: 'Seri diputuskan manual oleh juri', hasil_publikasi_buka: 'Publikasikan hasil', penilaian_buka: 'Penilaian dibuka', pendaftaran_buka: 'Pendaftaran dibuka' };
   const cfgInput = (k, v) => {
     const id = 'cfg_' + k;
     if (CFG_BOOL.has(k)) return `<select class="select" id="${id}" data-cfg="${k}"><option value="true" ${v === 'true' ? 'selected' : ''}>Ya</option><option value="false" ${v !== 'true' ? 'selected' : ''}>Tidak</option></select>`;
+    if (k === 'jam_mulai') return `<input type="time" class="input" id="${id}" data-cfg="${k}" value="${esc(v || '08:00')}">`;
     if (k === 'tanggal_lomba') return `<input type="date" class="input" id="${id}" data-cfg="${k}" value="${esc(v)}">`;
     if (k === 'deadline_pendaftaran') return `<input type="datetime-local" class="input" id="${id}" data-cfg="${k}" value="${esc(String(v).slice(0, 16))}">`;
     if (CFG_NUM[k]) return `<input type="number" class="input" id="${id}" data-cfg="${k}" min="${CFG_NUM[k][0]}" max="${CFG_NUM[k][1]}" value="${esc(v)}">`;

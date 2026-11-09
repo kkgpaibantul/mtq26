@@ -1448,7 +1448,7 @@
   }
   /** Tanda tangan juri: grid 3 kolom (wrap bila >3); baris di bawahnya: daftar blok (Pewara, Ketua Panitia/KKG) sejajar. */
   const ttdJuri3 = juri => `<div class="ttdh">Dewan Juri</div><div class="ttd3">${(juri || []).map(j => sigBlock('Juri ' + j.Urutan, { Nama: j.Nama, NIP: j.NIP })).join('') || sigBlock('Juri', {})}</div>`;
-  const ttdBawah = (blok, tgl) => `<div style="margin-top:26px;text-align:right;page-break-after:avoid">${esc(tgl)}</div><div class="ttd" style="margin-top:6px;justify-content:space-around;align-items:flex-start">${blok.join('')}</div>`;
+  const ttdBawah = (blok, tgl) => `<div style="margin-top:26px;text-align:center;page-break-after:avoid">${esc(tgl)}</div><div class="ttd" style="margin-top:6px;justify-content:space-around;align-items:flex-start">${blok.join('')}</div>`;
   const juriList = juri => (juri || []).map(j => `<div style="margin-bottom:6px;text-align:left">Juri ${j.Urutan}: <b><u>${esc(j.Nama)}</u></b></div>`).join('');
   const timLine = p => [p.Nama_Siswa || p.Nama, p.Anggota_2, p.Anggota_3].filter(Boolean).map(esc).join('<br>');
 

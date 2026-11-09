@@ -470,6 +470,8 @@
             </div>
             <div class="form-group"><label class="label">Upload TTD Ketua Panitia (PNG/JPEG, otomatis diperkecil ≤ 300 KB)</label><input type="file" class="input" accept="image/png,image/jpeg" onchange="uploadTtd('ketua_panitia', this)"></div>
             <div class="form-group"><label class="label">Upload TTD Ketua KKG (PNG/JPEG, otomatis diperkecil ≤ 300 KB)</label><input type="file" class="input" accept="image/png,image/jpeg" onchange="uploadTtd('ketua_kkg', this)"></div>
+            <div class="form-group"><label class="label">Logo Kop Kiri (mis. logo KKG) — PNG/JPEG ≤ 300 KB <span id="logoKiriInfo" style="color:var(--success)"></span></label><input type="file" class="input" accept="image/png,image/jpeg" onchange="uploadLogo('kiri', this)"></div>
+            <div class="form-group"><label class="label">Logo Kop Kanan (mis. logo Kabupaten) — PNG/JPEG ≤ 300 KB <span id="logoKananInfo" style="color:var(--success)"></span></label><input type="file" class="input" accept="image/png,image/jpeg" onchange="uploadLogo('kanan', this)"></div>
           </div>
         </div>
       </div>
@@ -674,6 +676,7 @@
     applyOpsi(await api('admin_opsi', {}, { noAuthRedirect: noRedirect }));
     showApp();
     loadDashboard();
+    loadLogos();
   }
   $('#btnLogin').onclick = async () => {
     const tok = $('#inputToken').value.trim().toUpperCase();
@@ -1382,9 +1385,19 @@
     try { State.kop = (await api('config')).kop || {}; } catch (e) { return { atas: [], tengah: [], bawah: [] }; }
     return State.kop;
   }
+  /** Logo kop (data URI) dimuat sekali setelah login & setiap selesai unggah. */
+  async function loadLogos() {
+    try { const r = await api('admin_logo_kop'); State.logos = { kiri: r.kiri || '', kanan: r.kanan || '' }; }
+    catch (e) { State.logos = State.logos || { kiri: '', kanan: '' }; }
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ? '✓ terpasang' : ''; };
+    set('logoKiriInfo', State.logos.kiri); set('logoKananInfo', State.logos.kanan);
+  }
   function kopHtml(kop) {
     const line = (arr, sz, bold) => (arr || []).map(x => `<div style="font-size:${sz}pt;${bold ? 'font-weight:bold;' : ''}text-align:center;">${esc(x.teks)}</div>`).join('');
-    return `<div style="text-align:center;padding-bottom:8px;margin-bottom:14px;border-bottom:3px double #000;">${line(kop.atas, 13, true)}${line(kop.tengah, 11, true)}${line(kop.bawah, 9, false)}</div>`;
+    const L = State.logos || {};
+    const img = (src, sisi) => src ? `<img src="${src}" alt="" style="height:22mm;max-width:28mm;object-fit:contain;flex:none">` : `<span style="width:${(L.kiri || L.kanan) ? '28mm' : '0'};flex:none"></span>`;
+    const teks = `<div style="flex:1">${line(kop.atas, 13, true)}${line(kop.tengah, 11, true)}${line(kop.bawah, 9, false)}</div>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:14px;border-bottom:3px double #000;">${(L.kiri || L.kanan) ? img(L.kiri) : ''}${teks}${(L.kiri || L.kanan) ? img(L.kanan) : ''}</div>`;
   }
   const BASE_CSS = `
     @page { size: A4 portrait; margin: 15mm 18mm; }
@@ -1693,6 +1706,21 @@
     finally { input.value = ''; input.disabled = false; }
   }
 
+  async function uploadLogo(posisi, input) {
+    let file = input.files[0];
+    if (!file) return;
+    if (!['image/png', 'image/jpeg'].includes(file.type)) { input.value = ''; return toast('Format logo harus PNG atau JPEG.', 'error'); }
+    input.disabled = true;
+    try {
+      if (file.size > TTD_MAX * 0.95) { file = await shrinkImage(file, Math.floor(TTD_MAX * 0.9)); toast('Gambar diperkecil otomatis agar ≤ 300 KB.', 'info'); }
+      const b64 = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = no; r.readAsDataURL(file); });
+      await api('admin_upload_logo', { posisi, file_base64: b64, mime_type: file.type || 'image/png' }, { timeout: 60000 });
+      State.kop = null; await loadLogos();
+      toast('Logo kop berhasil diunggah!', 'success');
+    } catch (e) { toast(e.message, 'error'); }
+    finally { input.value = ''; input.disabled = false; }
+  }
+
   /* ── 10. CONFIG ──────────────────────────────────────────────────────── */
   const CFG_MANAGED = new Set(['admin_token', 'ketua_panitia_nama', 'ketua_panitia_nip', 'ketua_kkg_nama', 'ketua_kkg_nip', 'kota_ba',
     'template_surat_id', 'template_piagam_id', 'ttd_ketua_panitia_url', 'ttd_ketua_kkg_url', 'nomor_surat_terakhir']);
@@ -1906,7 +1934,7 @@
     loadJuri: c => loadJuri(c),
     simpanPanitia, verifikasiKlasemen, simpanKunciLcp,
     cetakDaftarHadir, cetakDaftarNilai, cetakRekapLcp, cetakBA, cetakBAP, cetakSK, cetakNomorDada, cetakPiagam, cetakSurat,
-    uploadTtd, setTemplate,
+    uploadTtd, uploadLogo, setTemplate,
     runInitSystem: async () => {
       if (!await confirmPromise('Init System', 'Jalankan Init System? Ini menambahkan sheet/kolom yang hilang.')) return;
       try { await api('init', {}, { timeout: 120000 }); toast('Init System berhasil', 'success'); loadConfig(); } catch (e) { toast(e.message, 'error'); }

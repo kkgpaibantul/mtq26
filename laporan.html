@@ -1711,9 +1711,10 @@ const App = {
       const qty = it.satuan ? `${it.qty} ${esc(it.satuan)}` : String(it.qty);
       // DISKON DITAMPILKAN DI SINI
       const disk = it.diskon > 0 ? ` <span style="color:#c0392b; font-weight:bold;">(Diskon: −${formatRupiah(it.diskon)})</span>` : '';
-      return `<div style="display:flex;justify-content:space-between;gap:8px;padding:1px 0">
+      // FLEXBOX DIGANTI FLOAT AGAR TIDAK TERPOTONG SAAT PRINT
+      return `<div style="overflow:hidden; padding:1px 0;">
+        <span style="float:right; white-space:nowrap; font-variant-numeric:tabular-nums; margin-left:10px;">${formatRupiah(it.subtotal)}</span>
         <span>• ${esc(it.nama)} <span style="color:#888">${qty}</span> @ ${formatRupiah(it.harga)}${disk}</span>
-        <span style="white-space:nowrap;font-variant-numeric:tabular-nums">${formatRupiah(it.subtotal)}</span>
       </div>`;
     }).join('');
     return `<strong>${esc(d.pengeluaran)}</strong><div style="margin-top:4px;font-size:8.5pt;color:#333">${lines}</div>`;
@@ -1764,7 +1765,7 @@ const App = {
         <td style="text-align:center">${s.persen}%</td></tr>`;
     });
 
-    // ─── LAMPIRAN GRID (2 KOLOM) ───
+    // ─── LAMPIRAN GRID (FLEKSIBEL) ───
     let lampiran = '';
     const withFoto = r.rows.filter(d => d.fileIds && d.fileIds.length > 0);
     if (withFoto.length) {
@@ -1783,8 +1784,11 @@ const App = {
            return `<img src="${imgUrl}" class="lampiran-img" loading="eager">`;
         }).join('');
 
+        // LOGIKA FLEKSIBEL: Jika 1 gambar -> setengah halaman. Jika >1 gambar -> full halaman.
+        const isFullWidth = d.fileIds.length > 1;
+
         return `
-          <div class="lampiran-card">
+          <div class="lampiran-card ${isFullWidth ? 'full-width' : ''}">
             <div class="lampiran-header">
               <span>#${i + 1} · ${esc(d.tanggalPengeluaran)} · ${esc(d.seksi)}</span>
             </div>
@@ -1825,7 +1829,8 @@ const App = {
       th{background:#e8e8e8;font-weight:bold;text-align:left}
       
       /* PERBAIKAN TABEL AGAR TIDAK TERPOTONG */
-      tr { page-break-inside: avoid; break-inside: avoid; }
+      tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+      td { page-break-inside: avoid !important; break-inside: avoid !important; }
       thead { display: table-header-group; }
       tfoot { display: table-row-group; }
 
@@ -1833,15 +1838,17 @@ const App = {
       .subtotal-row td{background:#f4f6f8}
       .grand-total td{background:#E8F6F4;font-weight:bold;font-size:10pt}
       
-      /* LAMPIRAN STYLE (2 KOLOM) */
+      /* LAMPIRAN STYLE (FLEKSIBEL) */
       .page-break{page-break-before:always}
       .lampiran-container{display:grid; grid-template-columns: 1fr 1fr; gap:15px; align-items:start;}
       .lampiran-card{border:1px solid #ccc;border-radius:6px;padding:10px;background:#fff;page-break-inside:avoid;break-inside:avoid;}
+      .lampiran-card.full-width { grid-column: 1 / -1; }
       .lampiran-header{display:flex;justify-content:space-between;border-bottom:2px dashed #ccc;padding-bottom:5px;margin-bottom:8px;font-size:9pt;font-weight:bold;color:#333}
       .lampiran-items{font-size:8.5pt;margin-bottom:8px; line-height: 1.3;}
       
-      .lampiran-images{display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:5px;}
-      .lampiran-img{width:100%;height:auto;max-height:250px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px;}
+      /* Grid gambar di dalam kartu */
+      .lampiran-images{display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;}
+      .lampiran-img{width:100%;height:auto;max-height:320px;object-fit:contain;border:1px solid #ddd;background:#f8f9fa;border-radius:4px;}
       
       .footer{margin-top:20px;font-size:8pt;color:#777;text-align:center}
       .print-bar{position:fixed;top:0;left:0;right:0;background:#4A2E3F;color:#fff;padding:10px 16px;

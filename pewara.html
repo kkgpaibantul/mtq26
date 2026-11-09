@@ -265,8 +265,9 @@ input[type=number]{-moz-appearance:textfield}
 .print-page .kop .alamat{font-size:8.5pt;color:#666}
 .print-page .judul{font-size:13pt;text-align:center;font-weight:800;color:#111;margin:10px 0 4px;text-transform:uppercase}
 .print-page .sub{text-align:center;font-size:10pt;color:#666;margin-bottom:14px}
-.print-page .info-grid{display:grid;grid-template-columns:120px 1fr;gap:2px 12px;font-size:10pt;margin-bottom:14px}
+.print-page .info-grid{display:grid;grid-template-columns:max-content 10px 1fr;gap:3px 6px;font-size:10pt;margin:6px 0 14px;border:0}
 .print-page .info-grid .k{font-weight:600;color:#333}
+.print-page .info-grid .c{color:#333;text-align:center}
 .print-page .info-grid .v{color:#111}
 .print-page table.data{width:100%;border-collapse:collapse;font-size:9pt;margin:8px 0}
 .print-page table.data th{background:#4A2E3F;color:#fff;padding:6px 4px;font-size:8.5pt;font-weight:700;text-align:center;border:1px solid #333}
@@ -2642,13 +2643,13 @@ input[type=number]{-moz-appearance:textfield}
     return `<div class="print-page">
       ${buildKopHtml(kop)}
       <div class="judul">BERITA ACARA</div>
-      <div class="sub">${esc(d.label || '')}</div>
       <div class="info-grid">
-        <span class="k">Hari / Tanggal</span><span class="v">: ${esc(tanggal)}</span>
-        <span class="k">Tempat</span><span class="v">: ${esc(tempat)}</span>
-        <span class="k">Pewara</span><span class="v">: ${esc(pewara.Nama || '—')}${pewara.NIP ? ' / ' + esc(pewara.NIP) : ''}</span>
-        <span class="k">Panitia Pelaksana</span><span class="v">: ${esc(ttd.ketua_panitia?.Nama || '—')}${ttd.ketua_panitia?.NIP ? ' / ' + esc(ttd.ketua_panitia.NIP) : ''}</span>
-        <span class="k">Juri</span><span class="v">: ${juri.map(j => esc(j.Nama)).join(', ') || '—'}</span>
+        <span class="k">Hari / Tanggal</span><span class="c">:</span><span class="v">${esc(tanggal)}</span>
+        <span class="k">Tempat</span><span class="c">:</span><span class="v">${esc(tempat)}</span>
+        <span class="k">Cabang</span><span class="c">:</span><span class="v">${esc(d.label || '')}</span>
+        <span class="k">Pewara</span><span class="c">:</span><span class="v">${esc(pewara.Nama || '—')}${pewara.NIP ? ' / ' + esc(pewara.NIP) : ''}</span>
+        <span class="k">Panitia Pelaksana</span><span class="c">:</span><span class="v">${esc(ttd.ketua_panitia?.Nama || '—')}${ttd.ketua_panitia?.NIP ? ' / ' + esc(ttd.ketua_panitia.NIP) : ''}</span>
+        <span class="k">Juri</span><span class="c">:</span><span class="v">${juri.map(j => esc(j.Nama)).join(', ') || '—'}</span>
       </div>
       ${bodyHtml}${ttdHtml}
     </div>`;
@@ -2725,11 +2726,11 @@ input[type=number]{-moz-appearance:textfield}
     return `<div class="print-page">
       ${buildKopHtml(kop)}
       <div class="judul">DAFTAR HADIR</div>
-      <div class="sub">${esc(d.label || '')}</div>
       <div class="info-grid">
-        <span class="k">Hari / Tanggal</span><span class="v">: ${esc(tanggal)}</span>
-        <span class="k">Tempat</span><span class="v">: ${esc(tempat)}</span>
-        <span class="k">Total Peserta</span><span class="v">: ${peserta.length} peserta</span>
+        <span class="k">Hari / Tanggal</span><span class="c">:</span><span class="v">${esc(tanggal)}</span>
+        <span class="k">Tempat</span><span class="c">:</span><span class="v">${esc(tempat)}</span>
+        <span class="k">Cabang</span><span class="c">:</span><span class="v">${esc(d.label || '')}</span>
+        <span class="k">Total Peserta</span><span class="c">:</span><span class="v">${peserta.length} peserta</span>
       </div>
       <table class="data">
         <thead><tr>

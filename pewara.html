@@ -275,6 +275,8 @@ input[type=number]{-moz-appearance:textfield}
 .print-page table.data td.l{text-align:left;font-weight:600}
 .print-page table.data tbody tr:nth-child(even) td{background:#f8f9fa}
 .print-page .ttd{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:10pt}
+.print-page .ttd.ttd3{grid-template-columns:repeat(3,1fr);gap:16px 12px;margin-top:10px;page-break-inside:avoid}
+.print-page .ttd-h{margin-top:30px;text-align:center;font-weight:700;font-size:10pt;page-break-after:avoid}
 .print-page .ttd.single{grid-template-columns:1fr}
 .print-page .ttd .cell{text-align:center}
 .print-page .ttd .cell .tanggal{font-size:9pt;color:#333;margin-bottom:4px}
@@ -2623,17 +2625,13 @@ input[type=number]{-moz-appearance:textfield}
         }).join('')
       : '<em style="color:#888">(belum ada juri)</em>';
 
+    const juriSig = (juri.length ? juri : [{}]).map(j => `<div class="cell"><div class="jabatan has-img" style="margin-bottom:46px">Juri ${esc(j.Urutan || '')}</div><div class="nama">${esc(j.Nama || '(__________________)')}</div><div class="nip">${j.NIP ? 'NIP. ' + esc(j.NIP) : '&nbsp;'}</div></div>`).join('');
     const ttdHtml = `
-      <div class="ttd">
+      <div class="ttd-h">Dewan Juri</div>
+      <div class="ttd ttd3">${juriSig}</div>
+      <div class="ttd single" style="margin-top:22px">
         <div class="cell">
           <div class="tanggal">${esc(acara.kota || 'Bantul')}, ${esc(tanggal)}</div>
-          <div class="jabatan" style="margin-bottom:6px">Dewan Juri:</div>
-          <div style="min-height:80px;line-height:1.55;font-size:9pt;text-align:left;padding:0 14px;margin-bottom:10px">
-            ${juriListHtml}
-          </div>
-        </div>
-        <div class="cell">
-          <div class="tanggal" style="visibility:hidden">_</div>
           ${sigRole('Ketua KKG PAI Kab. Bantul', ttd.ketua_kkg)}
           <div class="nama">${esc(ttd.ketua_kkg?.Nama || '(__________________)')}</div>
           <div class="nip">${ttd.ketua_kkg?.NIP ? 'NIP. ' + esc(ttd.ketua_kkg.NIP) : '&nbsp;'}</div>

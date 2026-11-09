@@ -1412,7 +1412,10 @@
     .ttd .space{height:64px;display:flex;align-items:center;justify-content:center}
     .ttd img,.signature img{max-height:60px;max-width:160px}
     .signature{display:flex;justify-content:flex-end;margin-top:30px;text-align:center;page-break-inside:avoid} .signature .space{height:70px;display:flex;align-items:center;justify-content:center}
-    .warn{border:2px solid #b00;padding:6px;margin:8px 0;font-size:10pt}`;
+    .warn{border:2px solid #b00;padding:6px;margin:8px 0;font-size:10pt}
+    table.info{border-collapse:collapse;margin:8px 0 12px;border:0;width:auto} table.info td{border:0;padding:1px 4px;vertical-align:top;font-size:11pt} table.info td:first-child{white-space:nowrap;font-weight:bold} table.info td:nth-child(2){width:10px;text-align:center}`;
+  /** Blok keterangan (Hari/Tanggal, Tempat, Cabang): tabel 3 kolom tanpa border — label | : | isi. */
+  const infoTable = rows => `<table class="info">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>:</td><td>${esc(r[1])}</td></tr>`).join('')}</table>`;
   const DADA_CSS = `
     @page { size: A4 portrait; margin: 0; }
     *{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif}
@@ -1467,8 +1470,8 @@
       }
       const rows = peserta.map((p, i) => `<tr><td style="text-align:center;width:35px">${i + 1}</td><td style="width:80px">${esc(p.No_Undian || '')}</td><td>${timLine(p)}</td><td>${esc(p.Kapanewon || '')}</td><td>${esc(p.Sekolah || '')}</td><td style="width:90px;height:32px"></td></tr>`).join('');
       await openPrintWindow('Daftar Hadir', `
-        ${kopHtml(kop)}<h2>DAFTAR HADIR PESERTA</h2><h3>${esc(cab.label || '')}</h3>
-        <div><b>Hari/Tanggal:</b> ${esc(acara.tanggal_teks || tanggalAcara())}</div><div><b>Tempat:</b> ${esc(acara.tempat || State.config.tempat_lomba || '')}</div>
+        ${kopHtml(kop)}<h2>DAFTAR HADIR PESERTA</h2>
+        ${infoTable([['Hari/Tanggal', acara.tanggal_teks || tanggalAcara()], ['Tempat', acara.tempat || State.config.tempat_lomba || ''], ['Cabang', cab.label || '']])}
         <table class="data"><thead><tr><th>No</th><th>No. Undian</th><th>Nama Peserta</th><th>Kapanewon</th><th>Sekolah</th><th>Tanda Tangan</th></tr></thead><tbody>${rows}</tbody></table>
         <div class="signature">${sigBlock('Pewara', { Nama: pewara.Nama, NIP: '' }, `${esc(acara.kota || State.config.kota_ba || 'Bantul')}, ${tglIndo()}`)}</div>`);
     });

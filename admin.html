@@ -1409,6 +1409,10 @@
     table.data th{background:#e5e5e5;font-weight:bold;text-align:center}
     table.data tr{page-break-inside:avoid} thead{display:table-header-group}
     .ttd{margin-top:30px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;text-align:center;page-break-inside:avoid}
+    .ttd3{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 16px;text-align:center;page-break-inside:avoid}
+    .ttd3 .space{height:60px;display:flex;align-items:center;justify-content:center}
+    .ttd3 img{max-height:56px;max-width:150px}
+    .ttdh{margin-top:26px;text-align:center;font-weight:bold;page-break-after:avoid}
     .ttd .space{height:64px;display:flex;align-items:center;justify-content:center}
     .ttd img,.signature img{max-height:60px;max-width:160px}
     .signature{display:flex;justify-content:flex-end;margin-top:30px;text-align:center;page-break-inside:avoid} .signature .space{height:70px;display:flex;align-items:center;justify-content:center}
@@ -1442,6 +1446,9 @@
     const img = safeImg(sig.TTD);
     return `<div>${top ? top + '<br>' : ''}${esc(role)}<div class="space">${img ? `<img src="${img}" alt="">` : ''}</div><b><u>${esc(sig.Nama || GARIS)}</u></b>${sig.NIP ? `<br>NIP. ${esc(sig.NIP)}` : ''}</div>`;
   }
+  /** Tanda tangan juri: grid 3 kolom (wrap bila >3); baris di bawahnya: daftar blok (Pewara, Ketua Panitia/KKG) sejajar. */
+  const ttdJuri3 = juri => `<div class="ttdh">Dewan Juri</div><div class="ttd3">${(juri || []).map(j => sigBlock('Juri ' + j.Urutan, { Nama: j.Nama, NIP: j.NIP })).join('') || sigBlock('Juri', {})}</div>`;
+  const ttdBawah = (blok, tgl) => `<div style="margin-top:26px;text-align:right;page-break-after:avoid">${esc(tgl)}</div><div class="ttd" style="margin-top:6px;justify-content:space-around;align-items:flex-start">${blok.join('')}</div>`;
   const juriList = juri => (juri || []).map(j => `<div style="margin-bottom:6px;text-align:left">Juri ${j.Urutan}: <b><u>${esc(j.Nama)}</u></b></div>`).join('');
   const timLine = p => [p.Nama_Siswa || p.Nama, p.Anggota_2, p.Anggota_3].filter(Boolean).map(esc).join('<br>');
 
@@ -1533,10 +1540,8 @@
         <h4 style="text-align:left;margin-top:12px">Hasil Penilaian</h4>
         <table class="data"><thead><tr><th>Peringkat</th><th>No. Undian</th><th>Nama</th><th>Kapanewon</th><th>Skor</th></tr></thead><tbody>${rows || empty(5, 'Belum ada hasil')}</tbody></table>
         ${seri.length ? `<div class="warn">Perhatian: peringkat seri belum diputuskan (${esc(seri.join(', '))}).</div>` : ''}
-        <div class="ttd" style="justify-content:space-around">
-          <div style="flex:1;margin:0 20px;">Dewan Juri:<br><br>${juriList(juri)}</div>
-          ${sigBlock('Ketua KKG', ttd.ketua_kkg, `${esc(acara.kota || 'Bantul')}, ${tglIndo()}`)}
-        </div>`);
+        ${ttdJuri3(juri)}
+        ${ttdBawah([sigBlock('Ketua KKG', ttd.ketua_kkg)], `${acara.kota || 'Bantul'}, ${tglIndo()}`)}`);
     });
   }
 
@@ -1601,15 +1606,14 @@
       await openPrintWindow('BAP ' + cabang, `
         ${kopHtml(kop)}<h2>BERITA ACARA PELAKSANAAN</h2><h3>${esc(cab.label || '')}</h3><p class="tc">Nomor: ${esc(nomor)}</p>
         <p style="margin-top:12px">Pada hari ini ${esc(acara.tanggal_teks || acara.tanggal || '-')}, bertempat di ${esc(acara.tempat || '-')}, telah dilaksanakan ${esc(cab.label || '')}.</p>
-        <h4 style="text-align:left;margin-top:14px">1. Pelaksana</h4><p>Pewara: <b>${esc(pewara.Nama || '-')}</b><br>Dewan Juri:</p><ol>${juri.map(j => `<li>${esc(j.Nama)}</li>`).join('')}</ol>
-        <h4 style="text-align:left;margin-top:14px">2. Peserta</h4><p>Tidak hadir / tidak mengikuti: ${tidakIkut}</p>
+        <h4 style="text-align:left;margin-top:14px">1. Pelaksana</h4>
+        ${infoTable([['Pewara', pewara.Nama || '-'], ...juri.map(j => ['Juri ' + j.Urutan, j.Nama || '-'])])}
+        <h4 style="text-align:left;margin-top:14px">2. Peserta Tidak Hadir / Tidak Mengikuti</h4>
+        <p style="margin:4px 0 0 4px">${tidakIkut === '-' ? '–&nbsp;(nihil)' : tidakIkut}</p>
         <h4 style="text-align:left;margin-top:14px">3. Hasil Penilaian</h4>
         <table class="data"><thead><tr><th>Peringkat</th><th>No. Undian</th><th>Nama</th><th>Kapanewon</th><th>Skor</th></tr></thead><tbody>${rows || empty(5, '-')}</tbody></table>
-        <div class="ttd">
-          ${sigBlock('Ketua Panitia', ttd.ketua_panitia)}
-          <div style="flex:1;margin:0 20px;">Dewan Juri:<br><br>${juriList(juri)}</div>
-          ${sigBlock('Pewara', { Nama: pewara.Nama })}
-        </div>`);
+        ${ttdJuri3(juri)}
+        ${ttdBawah([sigBlock('Pewara', { Nama: pewara.Nama }), sigBlock('Ketua Panitia', ttd.ketua_panitia)], `${acara.kota || 'Bantul'}, ${tglIndo()}`)}`);
     });
   }
 

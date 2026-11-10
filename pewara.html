@@ -922,9 +922,18 @@ input[type=number]{-moz-appearance:textfield}
   /* ═══════════════════════════════════════════════════════════════
    * §7 PANGGUNG SYNC
    * ═══════════════════════════════════════════════════════════════ */
+  let _syncPanggungBusy = false, _syncPanggungAgain = false;
   async function syncPanggungAfterSave() {
+    if (_syncPanggungBusy) { _syncPanggungAgain = true; return; }   // gabungkan panggilan beruntun (autosave beberapa baris)
+    _syncPanggungBusy = true;
+    try { await _syncPanggungNow(); } finally {
+      _syncPanggungBusy = false;
+      if (_syncPanggungAgain) { _syncPanggungAgain = false; syncPanggungAfterSave(); }
+    }
+  }
+  async function _syncPanggungNow() {
     if (!S.dashboard) return;
-    if (getState() === 'final') return;
+    if (getState() !== 'draft') return;   // saat LOCKED/SIDANG/FINAL panggung tidak ikut bergerak (koreksi nilai tidak memindahkan peserta)
     if (isLcp()) return;  
     if (getCab() === 'Lukis') return;  
 
@@ -1691,7 +1700,7 @@ input[type=number]{-moz-appearance:textfield}
         clearNonLcpDraft(no);
         if (silent) showAutoSaveIndicator(`✓ ${no} tersimpan`, 'success');
         else toast(`${no} tersimpan`, 'success');
-        if (!silent) syncPanggungAfterSave();
+        syncPanggungAfterSave();   // baris lengkap → peserta berikutnya tampil (juga dari autosave)
       } else if (incompleteJuris.length > 0) {
         const juriList = incompleteJuris.map(x => `J${x.juri}(${x.cnt}/${x.total})`).join(', ');
         if (silent) showAutoSaveIndicator(`⏳ ${no}: ${completeRows.length}/${juri.length} · ${juriList}`);

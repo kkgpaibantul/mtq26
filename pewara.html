@@ -1272,8 +1272,8 @@ input[type=number]{-moz-appearance:textfield}
 
     const groupCols = juri.map((j, idx) => `<th class="th-juri th-juri-${idx+1}" colspan="${crit.length}">Juri ${j.Urutan} — ${esc(j.Nama)}</th>`).join('');
     const critCols = juri.map((j, idx) => crit.map(c => {
-      const min = (c.min === undefined || c.min === 0) ? '' : `${c.min}–`;
-      return `<th class="th-juri-${idx+1}" title="${esc(c.label)} (${min}${c.max})">${esc(c.key)}<br><small style="font-weight:500;font-size:9px;opacity:0.75">/${c.max}</small></th>`;
+      const mn = c.min || 0;
+      return `<th class="th-juri-${idx+1}" title="${esc(c.label)} (${mn}–${c.max})">${esc(c.key)}<br><small style="font-weight:600;font-size:10px;opacity:0.85;white-space:nowrap">${mn}–${c.max}</small></th>`;
     }).join('')).join('');
 
     const header = `<thead>

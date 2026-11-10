@@ -593,13 +593,14 @@ input[type=number]{-moz-appearance:textfield}
   const getRows = () => (S.dashboard || {}).rows || [];
 
   function sanitizeDecimal(raw, maxDecimals = 2) {
-    const s = String(raw ?? '').replace(/[^0-9.]/g, '');
+    // Koma (keyboard Indonesia) dianggap titik desimal; titik di akhir dipertahankan agar "45." → "45.5" bisa diketik.
+    const s = String(raw ?? '').replace(/,/g, '.').replace(/[^0-9.]/g, '');
     if (!s) return '';
     const parts = s.split('.');
     if (parts.length === 1) return parts[0];
     const intPart = parts[0];
     const decPart = parts.slice(1).join('').slice(0, maxDecimals);
-    return decPart ? `${intPart}.${decPart}` : intPart;
+    return `${intPart}.${decPart}`;
   }
 
   function parseFloatSafe(raw) {
@@ -1385,14 +1386,8 @@ input[type=number]{-moz-appearance:textfield}
     const max = parseFloat(inp.dataset.max);
     const min = parseFloat(inp.dataset.min || 0);
 
-    if (v !== '' && v !== '.' && !v.endsWith('.')) {
-      const n = parseFloat(v);
-      if (!isNaN(n)) {
-        if (n > max) v = String(max);
-        else if (n < min) v = String(min);
-      }
-    }
-
+    // JANGAN ubah angka yang diketik (mis. "4" menuju "45" tidak boleh dipaksa jadi min 30).
+    // Di luar rentang hanya ditandai merah; penyimpanan menolak nilai di luar rentang.
     if (inp.value !== v) inp.value = v;
 
     inp.classList.toggle('filled', v !== '');
@@ -1422,6 +1417,7 @@ input[type=number]{-moz-appearance:textfield}
       const n = parseFloat(cur);
       if (isNaN(n)) return;
       if (cur.length === 1 && n < 10 && n < max) return;
+      if (n < min || n > max) return;   // di luar rentang: tetap di sel agar bisa dikoreksi
       focusCellNext(inp);
     }, CFG.ADVANCE_DELAY);
   }

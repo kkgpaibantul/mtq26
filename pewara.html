@@ -309,7 +309,15 @@ input[type=number]{-moz-appearance:textfield}
 .lcp-table th{background:var(--surface-2);padding:8px 10px;font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--ink-light);border-bottom:1px solid var(--border);text-align:center}
 .lcp-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;font-size:0.85rem}
 .lcp-table td.l{text-align:left;font-weight:700}
-.lcp-table td .jawaban-input{width:100%;max-width:400px;padding:0.5rem 0.75rem;text-align:center;font-family:monospace;font-weight:700;letter-spacing:0.2em;font-size:0.85rem;text-transform:uppercase;border:1.5px solid var(--border);border-radius:6px}
+/* Input jawaban LCP: tiap karakter selebar --adv, sehingga penggaris nomor 1–25 tepat di atas hurufnya */
+.lcp-table td.jwb{--adv:1.05rem;--pad:12px;text-align:left}
+.lcp-table td .jwb-wrap{overflow-x:auto;padding-bottom:2px;display:flex;flex-direction:column;align-items:safe center}
+.lcp-table td .jwb-wrap .jawaban-preview{display:none}   /* nomor sudah di penggaris; salah-nomor ditulis di keterangan */
+.lcp-table td .jwb-ruler{display:flex;width:calc(25 * var(--adv) + 2 * var(--pad));padding:0 var(--pad);box-sizing:border-box;margin:0 0 2px;flex:none;color:var(--ink-light);font-family:monospace;font-size:0.62rem;line-height:1;user-select:none}
+.lcp-table td .jwb-ruler span{flex:0 0 var(--adv);width:var(--adv);text-align:left}
+.lcp-table td .jwb-ruler span:nth-child(5n){color:var(--rose-primary);font-weight:800}
+.lcp-table td .jwb-ruler span:nth-child(5n+1):not(:first-child){border-left:1px solid var(--border);margin-left:-1px;padding-left:1px;box-sizing:border-box}
+.lcp-table td .jawaban-input{display:block;margin:0;flex:none;box-sizing:border-box;width:calc(25 * var(--adv) + 2 * var(--pad));max-width:none;padding:0.5rem var(--pad);text-align:left;font-family:monospace;font-weight:700;letter-spacing:calc(var(--adv) - 1ch);font-size:0.9rem;text-transform:uppercase;border:1.5px solid var(--border);border-radius:6px}
 .lcp-table td .jawaban-input:focus{outline:none;border-color:var(--rose-primary);box-shadow:0 0 0 3px rgba(158,95,123,0.15)}
 .lcp-table td .jawaban-input:disabled{opacity:0.6;cursor:not-allowed;background:#F3F4F6;color:#9CA3AF}
 
@@ -2773,6 +2781,7 @@ input[type=number]{-moz-appearance:textfield}
       return;
     }
 
+    const RULER_25 = Array.from({ length: 25 }, (_, i) => `<span>${i + 1}</span>`).join('');
     const body = rows.map(r => {
       const peny = (r.fases || {}).penyisihan || {};
       const benar = peny.benar ?? '';
@@ -2791,13 +2800,14 @@ input[type=number]{-moz-appearance:textfield}
 
       return `<tr data-no="${esc(r.No_Undian)}">
         <td class="l"><strong>${esc(r.No_Undian)}</strong>${!blind && r.Nama_Siswa ? `<div style="font-size:0.72rem;color:var(--ink-light)">${esc(r.Nama_Siswa)}</div>` : ''}</td>
-        <td>${esc(r.Kapanewon || '—')}</td>
-        <td style="padding:10px 8px">
+        <td class="jwb" style="padding:10px 8px"><div class="jwb-wrap">
+          <div class="jwb-ruler" aria-hidden="true">${RULER_25}</div>
           <input type="text" class="jawaban-input" data-key="jawaban" maxlength="25"
             value="${esc(jawaban)}" placeholder="ABCDABCDABCDABCDABCDABCDA"
             spellcheck="false" autocomplete="off" ${isSaved || !penilaianBuka ? 'disabled' : ''}>
           <div class="jawaban-preview" data-preview>${initialChips}</div>
-          <div style="font-size:0.68rem;color:var(--ink-light);margin-top:4px" data-hint>${esc(hintTxt)}</div>
+          </div>
+          <div style="font-size:0.68rem;color:var(--ink-light);margin-top:4px;text-align:center" data-hint>${esc(hintTxt)}</div>
         </td>
         <td style="font-weight:800;color:var(--rose-primary)" data-benar>${benar !== '' ? benar : '—'}</td>
         <td style="font-weight:800;color:var(--hijau)" data-skor>${skor !== '' ? esc(skor) : '—'}</td>
@@ -2812,7 +2822,7 @@ input[type=number]{-moz-appearance:textfield}
       <div class="table-wrap">
         <table class="lcp-table">
           <thead><tr>
-            <th style="text-align:left">Regu</th><th>Kapanewon</th>
+            <th style="text-align:left">Regu</th>
             <th style="min-width:200px">Jawaban (25 karakter)</th>
             <th>Benar</th><th>Skor</th>
           </tr></thead>
@@ -2859,7 +2869,7 @@ input[type=number]{-moz-appearance:textfield}
           if (res.error) throw new Error(res.message);
           benarCell.textContent = String(res.benar);
           skorCell.textContent = String(res.skor);
-          hintEl.textContent = `✓ ${res.benar}/25 · skor ${res.skor}`;
+          hintEl.textContent = `✓ ${res.benar}/25 · skor ${res.skor}` + ((res.salah_indices || []).length ? ` · salah no. ${res.salah_indices.join(', ')}` : '');
           if (previewEl && res.salah_indices) {
             const salahSet = new Set(res.salah_indices);
             previewEl.innerHTML = jawaban.split('').map((ch, i) => {

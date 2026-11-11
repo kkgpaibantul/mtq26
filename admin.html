@@ -346,6 +346,7 @@
           <div style="display:flex; gap:0.5rem;">
             <select id="hasilMode" class="select" style="max-width:190px;"><option value="preview">Preview (semua)</option><option value="resmi">Resmi (hanya FINAL)</option></select>
             <button class="btn btn-warning btn-sm" onclick="verifikasiKlasemen(this)">🔍 Verifikasi</button>
+            <button class="btn btn-primary btn-sm" onclick="cetakJuaraUmum(this)" title="Cetak klasemen juara umum sesuai mode di sebelah kiri">🖨️ Cetak Juara Umum</button>
             <button class="btn btn-ghost btn-sm" onclick="loadHasil()">↺ Refresh</button>
           </div>
         </div>
@@ -1650,6 +1651,26 @@
     });
   }
 
+  async function cetakJuaraUmum(btn) {
+    await guard(btn, async () => {
+      const resmiMode = val('hasilMode') === 'resmi';
+      const [k, pg] = await Promise.all([api(resmiMode ? 'admin_juara_umum' : 'admin_juara_preview'), api('admin_data_piagam')]);
+      const klas = k.klasemen || [];
+      if (!klas.length) throw new Error('Belum ada data klasemen.');
+      const kop = pg.kop || await getKop(), acara = pg.acara || {}, ttd = pg.ttd || {};
+      const seri = (k.seri_juara || []).length;
+      const banner = k.resmi
+        ? ''
+        : `<p style="border:1.5px solid #b45309;background:#fffbeb;padding:6px 10px;margin:8px 0;font-weight:bold;text-align:center">BELUM RESMI \u2014 ${esc(k.cabang_final_count || 0)} dari ${esc(k.cabang_total || 0)} cabang sudah FINAL${seri ? '; masih ada seri yang belum diputuskan' : ''}</p>`;
+      const rows = klas.map(x => `<tr><td style="text-align:center"><b>${esc(x.Rank)}</b>${x.seri ? ' *' : ''}</td><td>${esc(x.Kapanewon)}</td><td style="text-align:center">${esc(x.J1)}</td><td style="text-align:center">${esc(x.J2)}</td><td style="text-align:center">${esc(x.J3)}</td><td style="text-align:center">${esc(x.H1)}</td><td style="text-align:center">${esc(x.H2)}</td><td style="text-align:center"><b>${esc(x.Poin)}</b></td></tr>`).join('');
+      await openPrintWindow('Juara Umum', `
+        ${kopHtml(kop)}<h2>KLASEMEN JUARA UMUM</h2><h3>${esc(acara.nama || 'MTQ 2026')}</h3>${banner}
+        <table class="data"><thead><tr><th>Peringkat</th><th>Kapanewon</th><th>Juara 1</th><th>Juara 2</th><th>Juara 3</th><th>Harapan 1</th><th>Harapan 2</th><th>Total Poin</th></tr></thead><tbody>${rows}</tbody></table>
+        ${klas.some(x => x.seri) ? '<p style="font-size:9pt">* Peringkat seri.</p>' : ''}
+        <div class="signature">${sigBlock('Ketua Panitia', ttd.ketua_panitia, `${esc(acara.kota || 'Bantul')}, ${tglIndo()}`)}</div>`);
+    });
+  }
+
   async function cetakPiagam(btn) {
     await guard(btn, async () => {
       const res = await api('admin_data_piagam');
@@ -1940,7 +1961,7 @@
     loadPeserta, loadOfisial, loadSekolah, loadPanggungAdmin: () => loadPanggungAdmin(), loadHasil, loadConfig,
     loadJuri: c => loadJuri(c),
     simpanPanitia, verifikasiKlasemen, simpanKunciLcp,
-    cetakDaftarHadir, cetakDaftarNilai, cetakRekapLcp, cetakBA, cetakBAP, cetakSK, cetakNomorDada, cetakPiagam, cetakSurat,
+    cetakDaftarHadir, cetakDaftarNilai, cetakRekapLcp, cetakBA, cetakBAP, cetakSK, cetakNomorDada, cetakPiagam, cetakJuaraUmum, cetakSurat,
     uploadTtd, uploadLogo, setTemplate,
     runInitSystem: async () => {
       if (!await confirmPromise('Init System', 'Jalankan Init System? Ini menambahkan sheet/kolom yang hilang.')) return;

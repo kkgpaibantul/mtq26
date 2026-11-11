@@ -1121,7 +1121,8 @@ input[type=number]{-moz-appearance:textfield}
 
     const mod = [];
     if (!isLcp()) {
-      mod.push({ route: 'input', icon: '📝', title: 'Input Nilai', desc: `${getKriteria().length} kriteria × ${getJuriList().length} juri`, disabled: !canInput });
+      // Setelah dikunci/Final tabel tetap bisa DILIHAT (hanya baca) agar pewara bisa menyalin rekap ke kertas.
+      mod.push({ route: 'input', icon: canInput ? '📝' : '👁️', title: canInput ? 'Input Nilai' : 'Lihat Nilai', desc: canInput ? `${getKriteria().length} kriteria × ${getJuriList().length} juri` : 'Hanya baca (nilai terkunci)', disabled: false });
     }
     mod.push({ route: 'kehadiran', icon: '👥', title: 'Kehadiran', desc: 'Tandai hadir / tidak hadir / sanksi', disabled: !canKehadiran });
     mod.push({ route: 'panggung', icon: '🎙️', title: 'Kendali Panggung', desc: 'Mulai lomba, Next, Timer', disabled: !penilaianBuka });
@@ -1224,7 +1225,8 @@ input[type=number]{-moz-appearance:textfield}
     inflight.savingRows.clear();
     clearAutoSaveTimers();
 
-    $('#inputTitle').textContent = `Input Nilai · ${d.kode}`;
+    const _bisaEdit = (d.state === 'draft' || d.state === 'sidang');
+    $('#inputTitle').textContent = `${_bisaEdit ? 'Input Nilai' : 'Lihat Nilai (hanya baca)'} · ${d.kode}`;
     const badge = $('#inputStateBadge');
     badge.textContent = d.state;
     badge.className = 'state-badge ' + d.state;
@@ -1262,7 +1264,7 @@ input[type=number]{-moz-appearance:textfield}
     $('#inputTableWrap').innerHTML = buildInputTableHtml(crit, juri, rows, blind, isSidangMode, penilaianBuka);
     $('#inputSaveBar').innerHTML = `
       <div class="info">Semua nilai tersimpan <span class="clean-badge">✓ synced</span></div>
-      <button class="btn btn-primary" id="btnSaveNilai" ${!penilaianBuka ? 'disabled' : ''}>💾 Simpan Semua</button>`;
+      <button class="btn btn-primary" id="btnSaveNilai" ${(!penilaianBuka || !_bisaEdit) ? 'disabled' : ''}>💾 Simpan Semua</button>`;
 
     bindInputTableEvents();
     $('#btnSaveNilai').onclick = () => saveNilai(false);

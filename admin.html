@@ -350,6 +350,18 @@
             <button class="btn btn-ghost btn-sm" onclick="loadHasil()">↺ Refresh</button>
           </div>
         </div>
+        <div style="margin:0 0 1rem;padding:0.9rem 1rem;border:1px solid var(--border,#e5e0e0);border-radius:10px;background:var(--surface,#fff);">
+          <b>📑 Laporan Hasil (untuk LPJ)</b>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.6rem;align-items:center;">
+            <span style="min-width:140px;font-size:0.85rem;">Juara &amp; Harapan</span>
+            <button class="btn btn-ghost btn-sm" onclick="laporanUnduh('juara','xlsx',this)">📊 Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="laporanUnduh('juara','pdf',this)">🖨️ PDF</button>
+            <span style="min-width:140px;font-size:0.85rem;margin-left:1rem;">Rekap Semua Juri</span>
+            <button class="btn btn-ghost btn-sm" onclick="laporanUnduh('juri','xlsx',this)">📊 Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="laporanUnduh('juri','pdf',this)">🖨️ PDF</button>
+          </div>
+          <div style="font-size:0.78rem;opacity:0.75;margin-top:0.4rem;">Cabang yang belum FINAL ditandai "BELUM RESMI" pada laporan. LCP memuat jawaban per regu, kunci, dan skor penyisihan.</div>
+        </div>
         <div class="stats-grid" id="hasilStats"></div>
         <h3 style="margin:1.5rem 0 1rem;">Klasemen Juara Umum</h3>
         <div class="table-wrap">
@@ -1671,6 +1683,187 @@
     });
   }
 
+  /* ── LAPORAN HASIL (Juara & Harapan, Rekap Juri) — Excel & PDF ─────────────────────────── */
+  const LAP_CSS = `
+    table.lap{width:100%;border-collapse:collapse;font-size:8.5pt;margin:6px 0}
+    table.lap th,table.lap td{border:1px solid #000;padding:2px 3px;text-align:center;vertical-align:middle}
+    table.lap td.l{text-align:left} table.lap th{background:#e5e5e5}
+    table.lap td.salah{background:#f4b4b4 !important;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table.lap td.kunci{background:#cfe8cf !important;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table.lap.jwb td,table.lap.jwb th{padding:2px 1px;font-size:8pt}
+    .pb{page-break-before:always} .lap-h{font-size:11pt;font-weight:bold;margin:10px 0 2px;text-align:left}
+    .lap-j{font-size:9.5pt;margin:0 0 4px} .lap-note{font-size:9pt;margin:2px 0}
+    .banner{border:1.5px solid #b45309;background:#fffbeb;padding:5px 10px;margin:8px 0;font-weight:bold;text-align:center;font-size:10pt}`;
+  const lapNama = x => [x.Nama].concat(x.Anggota || []).filter(Boolean).join(' / ');
+  const lapBanner = L => (L.resmi ? '' : `BELUM RESMI — ${L.cabang_final} dari ${L.cabang_total} cabang sudah FINAL${(L.seri_juara || []).length ? '; masih ada seri yang belum diputuskan' : ''}`);
+  const lapSheetName = (n, used) => { let s = String(n).replace(/[\\/?*\[\]:]/g, '').slice(0, 31) || 'Sheet'; let k = 2; while (used.has(s.toLowerCase())) s = s.slice(0, 28) + '_' + k++; used.add(s.toLowerCase()); return s; };
+  /** Bandingkan jawaban regu dengan kunci → [{c, ok}] (25 butir); jawaban kosong (nilai diinput sebagai jumlah benar) → null. */
+  function lapCocok(jaw, kunci) {
+    const j = String(jaw || '').toUpperCase(), k = String(kunci || '').toUpperCase();
+    if (j.length !== 25 || k.length !== 25) return null;
+    return j.split('').map((c, i) => ({ c, ok: c === k[i] }));
+  }
+  const lapSalahNo = m => (m || []).map((x, i) => (x.ok ? null : i + 1)).filter(Boolean);
+  const lapJuriGrid = (c) => { const n = Math.max(c.juri.length, ...(c.peserta || []).map(p => p.per_juri.length), 0); const nums = c.juri.map(j => j.Urutan); for (let i = nums.length + 1; i <= n; i++) nums.push(i); return nums; };
+  const lapKrLabel = k => `${k.label} (${k.min ? k.min + '–' : ''}${k.max})`;
+
+  /* ── EXCEL: Juara & Harapan ── */
+  function lapExcelJuara(XLSX, L) {
+    const a = L.acara || {}; const ban = lapBanner(L);
+    const aoa = [[a.nama || 'MTQ Pelajar'], ['LAPORAN HASIL LOMBA — JUARA DAN HARAPAN'], [`${a.tanggal_teks || ''} · ${a.tempat || ''}`]];
+    if (ban) aoa.push([ban]);
+    aoa.push([]);
+    const head0 = aoa.length;
+    aoa.push(['Cabang', 'Peringkat', 'No. Undian', 'Nama', 'Sekolah', 'Kapanewon', 'Skor', 'Status Cabang']);
+    L.cabang.forEach(c => {
+      if (!c.juara.length) aoa.push([c.label, '—', '', c.status === 'final' ? '(tidak ada data juara)' : '(belum ada hasil)', '', '', '', c.status.toUpperCase()]);
+      c.juara.forEach(j => aoa.push([c.label, j.peringkat, j.No_Undian, lapNama(j), j.Sekolah, j.Kapanewon, j.total, c.status.toUpperCase() + (j.tied ? ' (seri)' : '')]));
+    });
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{ wch: 38 }, { wch: 12 }, { wch: 11 }, { wch: 42 }, { wch: 32 }, { wch: 16 }, { wch: 9 }, { wch: 16 }];
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Juara & Harapan');
+    const u = [['KLASEMEN JUARA UMUM'], ban ? [ban] : [], ['Peringkat', 'Kapanewon', 'Juara 1', 'Juara 2', 'Juara 3', 'Harapan 1', 'Harapan 2', 'Total Poin']]
+      .filter(r => r.length);
+    (L.klasemen || []).forEach(k => u.push([k.Rank + (k.seri ? ' (seri)' : ''), k.Kapanewon, k.J1, k.J2, k.J3, k.H1, k.H2, k.Poin]));
+    const ws2 = XLSX.utils.aoa_to_sheet(u); ws2['!cols'] = [{ wch: 14 }, { wch: 20 }, { wch: 9 }, { wch: 9 }, { wch: 9 }, { wch: 10 }, { wch: 10 }, { wch: 11 }];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Juara Umum');
+    return wb;
+  }
+
+  /* ── EXCEL: Rekap Juri ── */
+  function lapSheetJuri(XLSX, c, L) {
+    const nums = lapJuriGrid(c), kr = c.kriteria, nk = kr.length, fix = 5;
+    const aoa = [[c.label], [`Status: ${c.status.toUpperCase()}`]];
+    c.juri.forEach(j => aoa.push([`Juri ${j.Urutan}`, j.Nama]));
+    aoa.push([]);
+    const h1 = aoa.length, merges = [];
+    const r1 = ['No', 'No. Undian', 'Nama', 'Kapanewon', 'Sekolah'], r2 = ['', '', '', '', ''];
+    nums.forEach(n => { r1.push(`Juri ${n}`); for (let i = 0; i < nk; i++) r1.push(''); kr.forEach(k => r2.push(lapKrLabel(k))); r2.push('Total'); });
+    r1.push('Skor Akhir', 'Peringkat', 'Keterangan'); r2.push('', '', '');
+    aoa.push(r1, r2);
+    for (let i = 0; i < fix; i++) merges.push({ s: { r: h1, c: i }, e: { r: h1 + 1, c: i } });
+    nums.forEach((n, gi) => merges.push({ s: { r: h1, c: fix + gi * (nk + 1) }, e: { r: h1, c: fix + gi * (nk + 1) + nk } }));
+    const cEnd = fix + nums.length * (nk + 1);
+    for (let i = 0; i < 3; i++) merges.push({ s: { r: h1, c: cEnd + i }, e: { r: h1 + 1, c: cEnd + i } });
+    const rowJuri = p => { const out = []; nums.forEach(n => { const pj = p.per_juri.find(x => Number(x.juri) === Number(n)); kr.forEach(k => out.push(pj ? pj[k.key] : '')); out.push(pj ? pj.total : ''); }); return out; };
+    c.peserta.forEach((p, i) => aoa.push([i + 1, p.No_Undian, p.Nama, p.Kapanewon, p.Sekolah].concat(rowJuri(p), [p.skor, p.rank + (p.seri ? ' (seri)' : ''), p.peringkat || (p.jumlah_juri < nums.length ? `nilai juri ${p.jumlah_juri}/${nums.length}` : '')])));
+    const blank = nums.length * (nk + 1) + 2;
+    (c.tidak_ikut || []).forEach(p => aoa.push(['', p.No_Undian, p.Nama, p.Kapanewon, p.Sekolah].concat(new Array(blank).fill(''), ['', 'TIDAK HADIR (' + p.keterangan + ')'])));
+    (c.belum_dinilai || []).forEach(p => aoa.push(['', p.No_Undian, p.Nama, p.Kapanewon, p.Sekolah].concat(new Array(blank).fill(''), ['', 'BELUM DINILAI'])));
+    const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!merges'] = merges;
+    ws['!cols'] = [{ wch: 5 }, { wch: 11 }, { wch: 30 }, { wch: 15 }, { wch: 28 }].concat(nums.flatMap(() => kr.map(() => ({ wch: 14 })).concat([{ wch: 8 }]))).concat([{ wch: 10 }, { wch: 11 }, { wch: 26 }]);
+    return ws;
+  }
+  function lapSheetLcp(XLSX, c) {
+    const aoa = [[c.label], [`Status: ${c.status.toUpperCase()} · Tahap: ${c.tahap}`], []];
+    const L0 = 4; // kolom tetap: Peringkat, No, Nama, Kapanewon
+    const nomor = Array.from({ length: 25 }, (_, i) => i + 1);
+    aoa.push(['A. PENYISIHAN — jawaban per regu (✗ = salah)']);
+    aoa.push(['', '', '', 'KUNCI JAWABAN'].concat((c.kunci || '').split('').slice(0, 25), ['', '', '', '']));
+    aoa.push(['Peringkat', 'No. Undian', 'Nama Regu', 'Kapanewon'].concat(nomor, ['Benar', 'Skor', 'No. Salah', 'Tambahan (benar)', 'Keterangan']));
+    c.penyisihan.forEach(p => {
+      const m = lapCocok(p.jawaban, c.kunci);
+      const cells = m ? m.map(x => (x.ok ? x.c : x.c + ' ✗')) : new Array(25).fill('');
+      aoa.push([p.rank + (p.seri ? ' (seri)' : ''), p.No_Undian, lapNama(p), p.Kapanewon].concat(cells, [p.benar, p.skor, m ? lapSalahNo(m).join(', ') : '(diinput jumlah benar)', p.tambahan ? p.tambahan.benar : '', p.finalis ? 'FINALIS' : '']));
+    });
+    (c.tanpa_nilai || []).forEach(p => aoa.push(['', p.No_Undian, lapNama(p), p.Kapanewon].concat(new Array(25).fill(''), ['', '', '', '', p.keterangan.toUpperCase()])));
+    if ((c.final || []).length) {
+      aoa.push([], ['B. FINAL']);
+      aoa.push(['Peringkat', 'No. Undian', 'Nama Regu', 'Kapanewon', 'Wajib (benar)', 'Wajib (skor)', 'Lempar (benar)', 'Lempar (salah)', 'Lempar (skor)', 'Rebutan (benar)', 'Rebutan (salah)', 'Rebutan (skor)', 'Skor Final', 'Skor Penyisihan', 'Tambahan Final', 'Total', 'Juara']);
+      c.final.forEach(f => aoa.push([f.rank + (f.seri ? ' (seri)' : ''), f.No_Undian, lapNama(f), f.Kapanewon,
+        f.wajib ? f.wajib.benar : '', f.wajib ? f.wajib.skor : '', f.lempar ? f.lempar.benar : '', f.lempar ? f.lempar.salah : '', f.lempar ? f.lempar.skor : '',
+        f.rebutan ? f.rebutan.benar : '', f.rebutan ? f.rebutan.salah : '', f.rebutan ? f.rebutan.skor : '', f.skor_final, c.bawa_penyisihan ? f.skor_penyisihan : '(tidak dibawa)', f.tambahan_final == null ? '' : f.tambahan_final, f.total, f.peringkat]));
+    }
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{ wch: 11 }, { wch: 11 }, { wch: 40 }, { wch: 15 }].concat(nomor.map(() => ({ wch: 4.5 }))).concat([{ wch: 7 }, { wch: 8 }, { wch: 24 }, { wch: 14 }, { wch: 14 }]);
+    return ws;
+  }
+  function lapExcelJuri(XLSX, L) {
+    const wb = XLSX.utils.book_new(), used = new Set();
+    const a = L.acara || {}, ban = lapBanner(L);
+    const ring = [[a.nama || 'MTQ Pelajar'], ['REKAP PENILAIAN SELURUH JURI'], [`${a.tanggal_teks || ''} · ${a.tempat || ''}`]];
+    if (ban) ring.push([ban]);
+    ring.push([], ['Cabang', 'Kode', 'Status', 'Peserta Dinilai', 'Tidak Hadir', 'Juri']);
+    L.cabang.forEach(c => ring.push([c.label, c.kode, c.status.toUpperCase(), c.tipe === 'lcp' ? (c.penyisihan || []).length : c.peserta.length, (c.tipe === 'lcp' ? c.tanpa_nilai : c.tidak_ikut || []).length, c.juri.map(j => `Juri ${j.Urutan}: ${j.Nama}`).join('; ')]));
+    const wsr = XLSX.utils.aoa_to_sheet(ring); wsr['!cols'] = [{ wch: 40 }, { wch: 8 }, { wch: 10 }, { wch: 14 }, { wch: 12 }, { wch: 90 }];
+    XLSX.utils.book_append_sheet(wb, wsr, lapSheetName('Ringkasan', used));
+    L.cabang.forEach(c => XLSX.utils.book_append_sheet(wb, c.tipe === 'lcp' ? lapSheetLcp(XLSX, c) : lapSheetJuri(XLSX, c, L), lapSheetName(c.kode, used)));
+    return wb;
+  }
+
+  /* ── PDF (cetak) ── */
+  const lapKepala = (L, judul) => {
+    const a = L.acara || {}, ban = lapBanner(L);
+    return `${kopHtml(L.kop || {})}<h2>${esc(judul)}</h2><h3>${esc(a.nama || '')}</h3>${infoTable([['Hari/Tanggal', a.tanggal_teks || ''], ['Tempat', a.tempat || '']])}${ban ? `<div class="banner">${esc(ban)}</div>` : ''}`;
+  };
+  const lapTtd = L => `<div class="signature">${sigBlock('Ketua Panitia', (L.ttd || {}).ketua_panitia, `${esc((L.acara || {}).kota || 'Bantul')}, ${tglIndo()}`)}</div>`;
+  function lapHtmlJuara(L) {
+    const tabel = L.cabang.map(c => {
+      const rows = c.juara.map(j => `<tr><td>${esc(j.peringkat)}</td><td>${esc(j.No_Undian)}</td><td class="l">${esc(lapNama(j))}</td><td class="l">${esc(j.Sekolah)}</td><td>${esc(j.Kapanewon)}</td><td>${esc(j.total)}</td></tr>`).join('')
+        || `<tr><td colspan="6">${c.status === 'final' ? '(tidak ada data juara)' : '(belum ada hasil)'}</td></tr>`;
+      return `<div class="lap-h" style="page-break-after:avoid">${esc(c.label)}${c.status === 'final' ? '' : ' — <span style="color:#b45309">belum FINAL</span>'}</div>
+        <table class="lap"><thead><tr><th style="width:14%">Peringkat</th><th style="width:11%">No. Undian</th><th>Nama</th><th>Sekolah</th><th style="width:13%">Kapanewon</th><th style="width:8%">Skor</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }).join('');
+    const um = (L.klasemen || []).map(k => `<tr><td>${esc(k.Rank)}${k.seri ? ' *' : ''}</td><td class="l">${esc(k.Kapanewon)}</td><td>${esc(k.J1)}</td><td>${esc(k.J2)}</td><td>${esc(k.J3)}</td><td>${esc(k.H1)}</td><td>${esc(k.H2)}</td><td><b>${esc(k.Poin)}</b></td></tr>`).join('');
+    return `${lapKepala(L, 'LAPORAN HASIL LOMBA — JUARA DAN HARAPAN')}${tabel}
+      <div class="pb"></div><div class="lap-h">KLASEMEN JUARA UMUM</div>
+      <table class="lap"><thead><tr><th>Peringkat</th><th>Kapanewon</th><th>Juara 1</th><th>Juara 2</th><th>Juara 3</th><th>Harapan 1</th><th>Harapan 2</th><th>Total Poin</th></tr></thead><tbody>${um}</tbody></table>${(L.klasemen || []).some(k => k.seri) ? '<div class="lap-note">* peringkat seri</div>' : ''}${lapTtd(L)}`;
+  }
+  function lapHtmlJuriNon(c) {
+    const nums = lapJuriGrid(c), kr = c.kriteria, nk = kr.length;
+    const juriLine = c.juri.map(j => `Juri ${esc(j.Urutan)}: ${esc(j.Nama)}`).join(' &nbsp;·&nbsp; ');
+    const h1 = nums.map(n => `<th colspan="${nk + 1}">Juri ${esc(n)}</th>`).join('');
+    const h2 = nums.map(() => kr.map(k => `<th>${esc(lapKrLabel(k))}</th>`).join('') + '<th>Total</th>').join('');
+    const cellsJuri = p => nums.map(n => { const pj = p.per_juri.find(x => Number(x.juri) === Number(n)); return kr.map(k => `<td>${pj ? esc(pj[k.key]) : ''}</td>`).join('') + `<td><b>${pj ? esc(pj.total) : ''}</b></td>`; }).join('');
+    const rows = c.peserta.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.No_Undian)}</td><td class="l">${esc(p.Nama)}</td><td class="l">${esc(p.Kapanewon)}</td>${cellsJuri(p)}<td><b>${esc(p.skor)}</b></td><td>${esc(p.rank)}${p.seri ? ' *' : ''}</td><td class="l">${esc(p.peringkat || (p.jumlah_juri < nums.length ? `nilai juri ${p.jumlah_juri}/${nums.length}` : ''))}</td></tr>`).join('');
+    const span = 4 + nums.length * (nk + 1) + 3;
+    const ex = (c.tidak_ikut || []).map(p => `<tr><td></td><td>${esc(p.No_Undian)}</td><td class="l">${esc(p.Nama)}</td><td class="l">${esc(p.Kapanewon)}</td><td colspan="${span - 4}" class="l">TIDAK HADIR (${esc(p.keterangan)})</td></tr>`).join('')
+      + (c.belum_dinilai || []).map(p => `<tr><td></td><td>${esc(p.No_Undian)}</td><td class="l">${esc(p.Nama)}</td><td class="l">${esc(p.Kapanewon)}</td><td colspan="${span - 4}" class="l">BELUM DINILAI</td></tr>`).join('');
+    return `<div class="lap-h">${esc(c.label)}${c.status === 'final' ? '' : ' — <span style="color:#b45309">belum FINAL</span>'}</div><div class="lap-j">${juriLine}</div>
+      <table class="lap"><thead><tr><th rowspan="2">No</th><th rowspan="2">No. Undian</th><th rowspan="2">Nama</th><th rowspan="2">Kapanewon</th>${h1}<th rowspan="2">Skor Akhir</th><th rowspan="2">Rank</th><th rowspan="2">Ket.</th></tr><tr>${h2}</tr></thead><tbody>${rows}${ex}</tbody></table>`;
+  }
+  function lapHtmlLcp(c) {
+    const kun = (c.kunci || '').split('').slice(0, 25);
+    const nomor = Array.from({ length: 25 }, (_, i) => `<th>${i + 1}</th>`).join('');
+    const rows = c.penyisihan.map(p => {
+      const m = lapCocok(p.jawaban, c.kunci);
+      const cells = m ? m.map(x => `<td${x.ok ? '' : ' class="salah"'}>${esc(x.c)}</td>`).join('') : `<td colspan="25" class="l"><i>(nilai diinput sebagai jumlah benar — jawaban per butir tidak tersimpan)</i></td>`;
+      return `<tr><td>${esc(p.rank)}${p.seri ? ' *' : ''}</td><td>${esc(p.No_Undian)}</td><td class="l" style="white-space:nowrap">${esc(lapNama(p))}</td>${cells}<td><b>${esc(p.benar)}</b></td><td><b>${esc(p.skor)}</b></td><td class="l">${esc(m ? lapSalahNo(m).join(', ') : '')}</td><td>${p.tambahan ? esc(p.tambahan.benar) : ''}</td><td>${p.finalis ? 'FINALIS' : ''}</td></tr>`;
+    }).join('');
+    const ex = (c.tanpa_nilai || []).map(p => `<tr><td></td><td>${esc(p.No_Undian)}</td><td class="l">${esc(lapNama(p))}</td><td colspan="30" class="l">${esc(p.keterangan.toUpperCase())}</td></tr>`).join('');
+    let fin = '';
+    if ((c.final || []).length) {
+      const fz = (z, w) => z ? `<td>${esc(z.benar)}</td>${w ? `<td>${esc(z.salah)}</td>` : ''}<td>${esc(z.skor)}</td>` : `<td></td>${w ? '<td></td>' : ''}<td></td>`;
+      fin = `<div class="lap-h" style="margin-top:12px">B. FINAL</div><table class="lap"><thead><tr><th rowspan="2">Rank</th><th rowspan="2">No.</th><th rowspan="2">Nama Regu</th><th colspan="2">Wajib</th><th colspan="3">Lempar Rebut</th><th colspan="3">Rebutan</th><th rowspan="2">Skor Final</th><th rowspan="2">Penyisihan</th><th rowspan="2">Tambahan</th><th rowspan="2">Total</th><th rowspan="2">Juara</th></tr><tr><th>Benar</th><th>Skor</th><th>Benar</th><th>Salah</th><th>Skor</th><th>Benar</th><th>Salah</th><th>Skor</th></tr></thead><tbody>${c.final.map(f => `<tr><td>${esc(f.rank)}${f.seri ? ' *' : ''}</td><td>${esc(f.No_Undian)}</td><td class="l">${esc(lapNama(f))}</td>${fz(f.wajib, false)}${fz(f.lempar, true)}${fz(f.rebutan, true)}<td><b>${esc(f.skor_final)}</b></td><td>${c.bawa_penyisihan ? esc(f.skor_penyisihan) : '—'}</td><td>${f.tambahan_final == null ? '' : esc(f.tambahan_final)}</td><td><b>${esc(f.total)}</b></td><td>${esc(f.peringkat)}</td></tr>`).join('')}</tbody></table>`;
+    }
+    return `<div class="lap-h">${esc(c.label)}${c.status === 'final' ? '' : ' — <span style="color:#b45309">belum FINAL</span>'}</div><div class="lap-note">Tahap: ${esc(c.tahap)} · Sel merah = jawaban salah / kosong</div>
+      <div class="lap-h" style="margin-top:4px">A. PENYISIHAN</div>
+      <table class="lap jwb"><thead><tr><th rowspan="2">Rank</th><th rowspan="2">No.</th><th rowspan="2">Nama Regu</th>${nomor}<th rowspan="2">Benar</th><th rowspan="2">Skor</th><th rowspan="2">No. Salah</th><th rowspan="2">Tambahan</th><th rowspan="2">Ket.</th></tr>
+      <tr>${kun.map(k => `<td class="kunci">${esc(k)}</td>`).join('')}</tr></thead><tbody>${rows}${ex}</tbody></table>
+      <div class="lap-note">Baris hijau di bawah nomor = KUNCI JAWABAN.</div>${fin}`;
+  }
+  function lapHtmlJuri(L) {
+    const body = L.cabang.map((c, i) => `<div class="${i ? 'pb' : ''}">${c.tipe === 'lcp' ? lapHtmlLcp(c) : lapHtmlJuriNon(c)}</div>`).join('');
+    return `${lapKepala(L, 'REKAP PENILAIAN SELURUH JURI')}${body}<div class="lap-note">Keterangan: * = peringkat seri; Skor Akhir = rata-rata total seluruh juri.</div>${lapTtd(L)}`;
+  }
+
+  async function laporanUnduh(jenis, fmt, btn) {
+    await guard(btn, async () => {
+      const L = await api('admin_laporan');
+      if (!(L.cabang || []).length) throw new Error('Data laporan kosong.');
+      const nama = (jenis === 'juara' ? 'Laporan_Juara_Harapan' : 'Laporan_Rekap_Juri') + (L.resmi ? '' : '_BELUM_RESMI');
+      if (fmt === 'xlsx') {
+        const XLSX = await loadXLSX();
+        const wb = jenis === 'juara' ? lapExcelJuara(XLSX, L) : lapExcelJuri(XLSX, L);
+        XLSX.writeFile(wb, `${nama}.xlsx`);
+        toast(`Excel diunduh: ${nama}.xlsx`, L.resmi ? 'success' : 'warn');
+      } else {
+        const land = jenis !== 'juara';
+        await openPrintWindow(nama.replace(/_/g, ' '), jenis === 'juara' ? lapHtmlJuara(L) : lapHtmlJuri(L), BASE_CSS + (land ? '@page{size:A4 landscape;margin:10mm 12mm}' : '') + LAP_CSS);
+      }
+    });
+  }
+
   async function cetakPiagam(btn) {
     await guard(btn, async () => {
       const res = await api('admin_data_piagam');
@@ -1961,7 +2154,7 @@
     loadPeserta, loadOfisial, loadSekolah, loadPanggungAdmin: () => loadPanggungAdmin(), loadHasil, loadConfig,
     loadJuri: c => loadJuri(c),
     simpanPanitia, verifikasiKlasemen, simpanKunciLcp,
-    cetakDaftarHadir, cetakDaftarNilai, cetakRekapLcp, cetakBA, cetakBAP, cetakSK, cetakNomorDada, cetakPiagam, cetakJuaraUmum, cetakSurat,
+    cetakDaftarHadir, cetakDaftarNilai, cetakRekapLcp, cetakBA, cetakBAP, cetakSK, cetakNomorDada, cetakPiagam, cetakJuaraUmum, laporanUnduh, cetakSurat,
     uploadTtd, uploadLogo, setTemplate,
     runInitSystem: async () => {
       if (!await confirmPromise('Init System', 'Jalankan Init System? Ini menambahkan sheet/kolom yang hilang.')) return;
